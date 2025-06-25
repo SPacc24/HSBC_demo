@@ -11,21 +11,21 @@ users = {
 
 # --- Canned Q&A ---
 generic_answers = {
-    "what is investment?": "Investment means putting money into assets to grow your wealth over time.",
-    "how to open an account?": "Visit any of our branches or use our online portal to open an account.",
-    "what are the fees?": "Fees depend on your account type. Basic accounts have zero monthly fees.",
+    "What is investment?": "Investment means putting money into assets to grow your wealth over time.",
+    "How to open an account?": "Visit any of our branches or use our online portal to open an account.",
+    "What are the fees?": "Fees depend on your account type. Basic accounts have zero monthly fees.",
 }
 
 customer_answers = {
-    "what is my portfolio?": "Your portfolio contains ESG ETF (50%), Balanced Fund (30%), and Green Bonds (20%).",
-    "how risky is my portfolio?": "Your portfolio risk level is Medium, balancing growth and safety.",
-    "can i change my risk level?": "Yes, you can adjust your risk tolerance anytime via the app or your RM.",
+    "What is my portfolio?": "Your portfolio contains ESG ETF (50%), Balanced Fund (30%), and Green Bonds (20%).",
+    "How risky is my portfolio?": "Your portfolio risk level is Medium, balancing growth and safety.",
+    "Can I change my risk level?": "Yes, you can adjust your risk tolerance anytime via the app or your RM.",
 }
 
 rm_answers = {
-    "show client list": "Clients: Alex Tan, Brian Lim, Clara Wong.",
-    "recommend portfolio": "A balanced portfolio with ETFs and bonds fits most clients seeking moderate growth.",
-    "how to contact clients?": "Use the CRM dashboard or email for client communication.",
+    "Show client list": "Clients: Alex Tan, Brian Lim, Clara Wong.",
+    "Recommend portfolio": "A balanced portfolio with ETFs and bonds fits most clients seeking moderate growth.",
+    "How to contact clients?": "Use the CRM dashboard or email for client communication.",
 }
 
 # --- Fake portfolio data for Customer ---
@@ -35,7 +35,7 @@ portfolio_data = {
     "Green Bonds": 20,
 }
 
-# --- Initialize session state ---
+# --- Session State Init ---
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
     st.session_state.role = None
@@ -53,7 +53,7 @@ def login():
             st.session_state.role = users[username]["role"]
             st.session_state.username = username
             st.success(f"Logged in as {username} ({st.session_state.role})")
-            st.rerun()
+            st.experimental_rerun()
         else:
             st.error("Invalid credentials.")
 
@@ -62,16 +62,15 @@ def logout():
         st.session_state.logged_in = False
         st.session_state.role = None
         st.session_state.username = None
-        st.rerun()
+        st.experimental_rerun()
 
 def respond_to_question(question, role):
-    q = question.lower().strip()
     if role == "Visitor":
-        return generic_answers.get(q, "Sorry, I don't know the answer to that yet.")
+        return generic_answers.get(question, "Sorry, I don't know the answer to that yet.")
     elif role == "Customer":
-        return customer_answers.get(q, "Sorry, I cannot answer that right now.")
+        return customer_answers.get(question, "Sorry, I cannot answer that right now.")
     elif role == "Relationship Manager":
-        return rm_answers.get(q, "Sorry, I don't have that info.")
+        return rm_answers.get(question, "Sorry, I don't have that info.")
     else:
         return "Role not recognized."
 
@@ -92,8 +91,9 @@ def show_explanation():
     """)
 
 def normal_visitor():
-    st.title("Welcome, Visitor! Ask anything below.")
-    question = st.text_input("Your question:")
+    st.title("Welcome, Visitor! Ask something below.")
+    
+    question = st.selectbox("Choose a question:", [""] + list(generic_answers.keys()))
     if question:
         answer = respond_to_question(question, "Visitor")
         st.markdown(f"**WealthMate:** {answer}")
@@ -104,7 +104,7 @@ def customer():
     tabs = st.tabs(["💬 Chat", "📊 Portfolio", "🧾 Explanation"])
 
     with tabs[0]:
-        question = st.text_input("Ask about your portfolio or investment:")
+        question = st.selectbox("Ask about your portfolio:", [""] + list(customer_answers.keys()))
         if question:
             answer = respond_to_question(question, "Customer")
             st.markdown(f"**WealthMate:** {answer}")
@@ -123,7 +123,7 @@ def rm():
     tabs = st.tabs(["💬 AI Advisory Chat", "👥 Client List"])
 
     with tabs[0]:
-        question = st.text_input("Ask for client info or portfolio advice:")
+        question = st.selectbox("Ask about client advisory:", [""] + list(rm_answers.keys()))
         if question:
             answer = respond_to_question(question, "Relationship Manager")
             st.markdown(f"**WealthMate:** {answer}")
@@ -137,7 +137,6 @@ def rm():
     logout()
 
 # --- Main App ---
-
 role_option = st.sidebar.selectbox("Select your role", ["Visitor", "Customer", "Relationship Manager"])
 
 if role_option == "Visitor":
