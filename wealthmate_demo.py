@@ -62,7 +62,7 @@ def logout():
         st.session_state.logged_in = False
         st.session_state.role = None
         st.session_state.username = None
-        st.experimental_rerun()
+        st.rerun()
 
 def respond_to_question(question, role):
     q = question.lower().strip()
