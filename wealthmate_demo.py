@@ -3,13 +3,13 @@ import plotly.express as px
 
 st.set_page_config(page_title="WealthMate Demo", layout="wide")
 
-# --- User database ---
+# --- Fake user database ---
 users = {
     "alex": {"password": "client123", "role": "Customer"},
     "cheryl": {"password": "rm123", "role": "Relationship Manager"},
 }
 
-# --- Canned Q&A ---
+# --- Prewritten Q&A ---
 generic_answers = {
     "What is investment?": "Investment means putting money into assets to grow your wealth over time.",
     "How to open an account?": "Visit any of our branches or use our online portal to open an account.",
@@ -28,30 +28,39 @@ rm_answers = {
     "How to contact clients?": "Use the CRM dashboard or email for client communication.",
 }
 
-# --- Fake portfolio data for Customer ---
+# --- Fake portfolio data ---
 portfolio_data = {
     "ESG ETF": 50,
     "Balanced Fund": 30,
     "Green Bonds": 20,
 }
 
-# --- Session State Init ---
+# --- Session state setup ---
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
     st.session_state.role = None
     st.session_state.username = None
 
-# --- Helper functions ---
+# --- Helper: respond to Q ---
+def respond_to_question(question, role):
+    if role == "Visitor":
+        return generic_answers.get(question, "Sorry, I don't know the answer to that yet.")
+    elif role == "Customer":
+        return customer_answers.get(question, "Sorry, I cannot answer that right now.")
+    elif role == "Relationship Manager":
+        return rm_answers.get(question, "Sorry, I don't have that info.")
+    return "Unknown role."
 
+# --- Helper: login logic ---
 def login():
-    st.title("WealthMate Demo Login")
+    st.title("WealthMate Login")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     if st.button("Login"):
         if username in users and users[username]["password"] == password:
             st.session_state.logged_in = True
-            st.session_state.role = users[username]["role"]
             st.session_state.username = username
+            st.session_state.role = users[username]["role"]
             st.success(f"Logged in as {username} ({st.session_state.role})")
             st.experimental_rerun()
         else:
@@ -60,87 +69,79 @@ def login():
 def logout():
     if st.button("Logout"):
         st.session_state.logged_in = False
-        st.session_state.role = None
         st.session_state.username = None
+        st.session_state.role = None
         st.experimental_rerun()
 
-def respond_to_question(question, role):
-    if role == "Visitor":
-        return generic_answers.get(question, "Sorry, I don't know the answer to that yet.")
-    elif role == "Customer":
-        return customer_answers.get(question, "Sorry, I cannot answer that right now.")
-    elif role == "Relationship Manager":
-        return rm_answers.get(question, "Sorry, I don't have that info.")
-    else:
-        return "Role not recognized."
-
-def show_portfolio():
-    st.subheader("📊 Your Portfolio Breakdown")
-    labels = list(portfolio_data.keys())
-    values = list(portfolio_data.values())
-    fig = px.pie(names=labels, values=values, title="Portfolio Allocation")
-    st.plotly_chart(fig, use_container_width=True)
-
-def show_explanation():
-    st.subheader("🧾 Portfolio Explanation")
-    st.write("""
-    Your portfolio is designed to balance risk and return:
-    - **ESG ETF (50%)** focuses on sustainable companies.
-    - **Balanced Fund (30%)** aims for steady growth.
-    - **Green Bonds (20%)** provide fixed income with environmental benefits.
-    """)
-
+# --- Visitor mode ---
 def normal_visitor():
-    st.title("Welcome, Visitor! Ask something below.")
-    
-    question = st.selectbox("Choose a question:", [""] + list(generic_answers.keys()))
+    st.title("Welcome, Visitor 👋")
+    st.subheader("💬 Ask a general question:")
+
+    question = st.radio("Choose a question:", list(generic_answers.keys()))
     if question:
         answer = respond_to_question(question, "Visitor")
         st.markdown(f"**WealthMate:** {answer}")
 
+# --- Customer mode ---
 def customer():
-    st.title(f"Welcome Customer {st.session_state.username}")
+    st.title(f"Welcome Customer {st.session_state.username} 🧍‍♂️")
 
-    tabs = st.tabs(["💬 Chat", "📊 Portfolio", "🧾 Explanation"])
+    tabs = st.tabs(["💬 Ask a Question", "📊 Portfolio", "🧾 Explanation"])
 
     with tabs[0]:
-        question = st.selectbox("Ask about your portfolio:", [""] + list(customer_answers.keys()))
+        st.subheader("💬 Portfolio Questions")
+        question = st.radio("Select:", list(customer_answers.keys()))
         if question:
             answer = respond_to_question(question, "Customer")
             st.markdown(f"**WealthMate:** {answer}")
 
     with tabs[1]:
-        show_portfolio()
+        st.subheader("📊 Your Portfolio Breakdown")
+        fig = px.pie(
+            names=list(portfolio_data.keys()),
+            values=list(portfolio_data.values()),
+            title="Portfolio Allocation"
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
     with tabs[2]:
-        show_explanation()
+        st.subheader("🧾 Portfolio Explanation")
+        st.markdown("""
+        Your portfolio is designed for moderate risk and long-term growth:
+        - **50% ESG ETF**: Sustainable companies.
+        - **30% Balanced Fund**: Steady growth.
+        - **20% Green Bonds**: Fixed income with environmental impact.
+        """)
 
     logout()
 
+# --- Relationship Manager mode ---
 def rm():
-    st.title(f"Welcome Relationship Manager {st.session_state.username}")
+    st.title(f"Welcome RM {st.session_state.username} 👩‍💼")
 
-    tabs = st.tabs(["💬 AI Advisory Chat", "👥 Client List"])
+    tabs = st.tabs(["💬 Advisor Q&A", "👥 Client List"])
 
     with tabs[0]:
-        question = st.selectbox("Ask about client advisory:", [""] + list(rm_answers.keys()))
+        st.subheader("Ask an advisory question:")
+        question = st.radio("Select:", list(rm_answers.keys()))
         if question:
             answer = respond_to_question(question, "Relationship Manager")
             st.markdown(f"**WealthMate:** {answer}")
 
     with tabs[1]:
-        st.subheader("Your Clients")
+        st.subheader("👥 Your Clients")
         st.write("1. Alex Tan")
         st.write("2. Brian Lim")
         st.write("3. Clara Wong")
 
     logout()
 
-# --- Main App ---
-role_option = st.sidebar.selectbox("Select your role", ["Visitor", "Customer", "Relationship Manager"])
+# --- App Main Flow ---
+role_option = st.sidebar.selectbox("🔐 Select your role", ["Visitor", "Customer", "Relationship Manager"])
 
 if role_option == "Visitor":
-    st.session_state.logged_in = False  # no login needed for visitor
+    st.session_state.logged_in = False
     normal_visitor()
 
 elif role_option in ["Customer", "Relationship Manager"]:
