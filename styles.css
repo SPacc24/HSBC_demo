@@ -1,9 +1,3 @@
-/* styles.css */
-
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
 .footer {
     position: fixed;
     bottom: 0;
@@ -12,12 +6,14 @@ body {
     background-color: rgba(250, 250, 250, 0.95);
     color: #222;
     display: flex;
+    flex-wrap: wrap; /* allow wrap */
     justify-content: space-between;
     align-items: center;
-    padding: 8px 20px;
-    font-size: 0.95rem;
+    padding: 10px 20px;
+    font-size: 0.9rem;
     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
     z-index: 9999;
+    gap: 10px; /* add space between items */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -28,57 +24,5 @@ body {
     }
     .footer a {
         color: #aadfff;
-    }
-}
-
-.footer a {
-    text-decoration: none;
-    color: #0072f5;
-    margin-left: 12px;
-}
-
-.footer a:hover {
-    text-decoration: underline;
-}
-
-.footer button {
-    background-color: #0072f5;
-    border: none;
-    color: white;
-    padding: 6px 14px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: background-color 0.3s ease;
-}
-
-.footer button:hover {
-    background-color: #005bb5;
-}
-
-.footer .footer-section {
-    display: flex;
-    align-items: center;
-}
-
-/* Accessibility toggle icon */
-.accessibility-toggle {
-    font-size: 1.4rem;
-    cursor: pointer;
-    user-select: none;
-}
-
-/* Responsive tweaks */
-@media (max-width: 600px) {
-    .footer {
-        flex-direction: column;
-        gap: 6px;
-        font-size: 0.85rem;
-        padding: 10px 15px;
-    }
-    .footer .footer-section {
-        justify-content: center;
-        width: 100%;
     }
 }
