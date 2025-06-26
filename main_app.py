@@ -45,7 +45,7 @@ def render_footer():
     with cols[0]:
         if st.button(accessibility_text):
             toggle_accessibility()
-            st.experimental_rerun()
+            st.rerun()
     with cols[1]:
         st.markdown(
             """
