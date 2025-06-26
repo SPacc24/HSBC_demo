@@ -32,7 +32,7 @@ def login(role):
     st.title(f"{role} Login")
     username = st.text_input("Username", key="login_username")
     password = st.text_input("Password", type="password", key="login_password")
-    if st.button("Login"):
+    if st.button("Login", key="login_button"):
         if username in users and users[username]["password"] == password and users[username]["role"] == role:
             st.session_state.logged_in = True
             st.session_state.role = role
@@ -92,25 +92,12 @@ def render_footer():
     if st.session_state.accessibility_mode:
         footer_style += " font-size: 18px; padding: 14px 20px;"
 
-    # Accessibility toggle button text & icon (using unicode)
     accessibility_text = "🧑‍🦳 Accessibility Mode: ON" if st.session_state.accessibility_mode else "👵 Accessibility Mode: OFF"
 
-    # Log out button only if logged in
-    logout_button = ""
-    if st.session_state.logged_in:
-        if st.button("🚪 Logout"):
-            st.session_state.logged_in = False
-            st.session_state.role = None
-            st.session_state.username = None
-            st.session_state.persona = None
-            clear_chat()
-            st.rerun()
-
-    # Layout footer content using columns with Streamlit markdown and buttons
     col1, col2, col3 = st.columns([1, 6, 1], gap="small")
 
     with col1:
-        if st.button(accessibility_text):
+        if st.button(accessibility_text, key="accessibility_toggle"):
             toggle_accessibility()
 
     with col2:
@@ -125,7 +112,7 @@ def render_footer():
 
     with col3:
         if st.session_state.logged_in:
-            if st.button("🚪 Logout"):
+            if st.button("🚪 Logout", key="logout_button"):
                 st.session_state.logged_in = False
                 st.session_state.role = None
                 st.session_state.username = None
