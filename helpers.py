@@ -6,7 +6,38 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 #from helpers import add_message, render_chat, back, logout, load_css
 
-load_css()
+# helpers.py
+def load_css():
+    with open("styles.css") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+def add_message(role, content):
+    st.session_state.chat_history.append((role, content))
+
+def render_chat():
+    for role, msg in st.session_state.chat_history:
+        if isinstance(msg, str):
+            st.chat_message(role).markdown(msg)
+        else:
+            st.chat_message(role).plotly_chart(msg)
+
+def back():
+    if st.button("⬅️ Back") and st.session_state.chat_stage > 0:
+        st.session_state.chat_stage -= 1
+        st.session_state.chat_history = st.session_state.chat_history[:-2]
+        st.rerun()
+
+def logout():
+    with st.sidebar:
+        if st.button("🔒 Logout"):
+            st.session_state.logged_in = False
+            st.session_state.username = None
+            st.session_state.role = None
+            st.session_state.chat_stage = 0
+            st.session_state.chat_history = []
+            st.session_state.welcome_shown = False
+            st.rerun()
+
 
 product_prices = pd.DataFrame({
     "date": pd.date_range(start="2025-01-01", periods=6, freq="M"),
