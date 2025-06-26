@@ -33,8 +33,4 @@ body, .main {
     }
 }
 
-/* Accessibility Mode overrides */
-.accessibility-mode {
-    font-size: 30px !important;
-    line-height: 1.6 !important;
-}
+

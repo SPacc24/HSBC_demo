@@ -45,20 +45,6 @@ def login(role):
 def main():
     load_css()
 
-    # Add/remove accessibility CSS class to <body> tag using JS injection
-    if st.session_state.accessibility_mode:
-        st.markdown(
-            """
-            <style>
-            body {
-                font-size: 18px !important;
-                line-height: 1.6 !important;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
-
     if not st.session_state.logged_in:
         role_option = st.sidebar.selectbox("🔐 Select your role", ["Visitor", "Customer", "Relationship Manager"])
         if role_option == "Visitor":
