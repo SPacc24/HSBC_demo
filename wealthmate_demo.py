@@ -1,6 +1,8 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
+import numpy as np
+from sklearn.linear_model import LinearRegression
 
 st.set_page_config(page_title="WealthMate Demo", layout="wide")
 
@@ -30,33 +32,18 @@ if "logged_in" not in st.session_state:
     st.session_state.role = None
     st.session_state.username = None
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+if "chat_stage" not in st.session_state:
+    st.session_state.chat_stage = 0
 
-# --- Helper: respond to Q ---
-def respond_to_question(question, role):
-    generic_answers = {
-        "What is investment?": "Investment means putting money into assets to grow your wealth over time.",
-        "How to open an account?": "Visit any of our branches or use our online portal to open an account.",
-        "What are the fees?": "Fees depend on your account type. Basic accounts have zero monthly fees.",
-    }
-    customer_answers = {
-        "What is my portfolio?": "Your portfolio contains ESG ETF (50%), Balanced Fund (30%), and Green Bonds (20%).",
-        "How risky is my portfolio?": "Your portfolio risk level is Medium, balancing growth and safety.",
-        "Can I change my risk level?": "Yes, you can adjust your risk tolerance anytime via the app or your RM.",
-    }
-    rm_answers = {
-        "Show client list": "Clients: Alex Tan, Brian Lim, Clara Wong.",
-        "Recommend portfolio": "A balanced portfolio with ETFs and bonds fits most clients seeking moderate growth.",
-        "How to contact clients?": "Use the CRM dashboard or email for client communication.",
-    }
-    if role == "Visitor":
-        return generic_answers.get(question, "Sorry, I don't know the answer to that yet.")
-    elif role == "Customer":
-        return customer_answers.get(question, "Sorry, I cannot answer that right now.")
-    elif role == "Relationship Manager":
-        return rm_answers.get(question, "Sorry, I don't have that info.")
-    return "Unknown role."
+# --- Predictive Analysis Helper ---
+def predict_future(prices):
+    x = np.arange(len(prices)).reshape(-1, 1)
+    y = np.array(prices).reshape(-1, 1)
+    model = LinearRegression()
+    model.fit(x, y)
+    future_x = np.arange(len(prices), len(prices) + 3).reshape(-1, 1)
+    predictions = model.predict(future_x)
+    return predictions.flatten().tolist()
 
 # --- Login ---
 def login():
@@ -78,90 +65,77 @@ def logout():
         st.session_state.logged_in = False
         st.session_state.username = None
         st.session_state.role = None
-        st.chat_history = []
+        st.session_state.chat_stage = 0
         st.rerun()
 
-# --- Visitor mode ---
-def normal_visitor():
-    st.chat_message("assistant").markdown("Hi! What do you want to know today?")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if st.button("💸 What is investment?"):
-            st.chat_message("user").markdown("What is investment?")
-            st.chat_message("assistant").markdown("Investment means putting money into assets to grow your wealth over time.")
-    with col2:
-        if st.button("🏦 Open an account"):
-            st.chat_message("user").markdown("How to open an account?")
-            st.chat_message("assistant").markdown("Visit any of our branches or use our online portal to open an account.")
-    with col3:
-        if st.button("📋 Fees"):
-            st.chat_message("user").markdown("What are the fees?")
-            st.chat_message("assistant").markdown("Fees depend on your account type. Basic accounts have zero monthly fees.")
-
-# --- Customer mode ---
+# --- Customer chat simulation ---
 def customer():
-    st.chat_message("assistant").markdown(f"Welcome back, {st.session_state.username}!")
+    st.chat_message("assistant").markdown(f"Welcome back, {st.session_state.username}! Let's explore your investments.")
 
-    st.subheader("📊 Portfolio Tracking")
-    fig = px.line(product_prices, x="date", y=product_prices.columns[1:], title="Product Price Trends")
-    st.plotly_chart(fig, use_container_width=True)
+    if st.session_state.chat_stage == 0:
+        st.chat_message("assistant").markdown("How can I assist you today?")
+        if st.button("📈 View Portfolio"):
+            st.chat_message("user").markdown("View Portfolio")
+            st.chat_message("assistant").markdown("Your portfolio: ESG ETF (50%), Balanced Fund (30%), Green Bonds (20%)")
+            st.session_state.chat_stage = 1
+            st.rerun()
+        if st.button("⚖️ Portfolio Risk"):
+            st.chat_message("user").markdown("Portfolio Risk")
+            st.chat_message("assistant").markdown("Your portfolio risk is Medium. It balances growth and safety.")
+            st.session_state.chat_stage = 1
+            st.rerun()
+        if st.button("🔄 Change Risk Level"):
+            st.chat_message("user").markdown("Change Risk Level")
+            st.chat_message("assistant").markdown("You can adjust your risk tolerance via the settings page or RM.")
+            st.session_state.chat_stage = 1
+            st.rerun()
 
-    st.subheader("💬 Ask about your investments")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if st.button("📈 My portfolio"):
-            st.chat_message("user").markdown("What is my portfolio?")
-            st.chat_message("assistant").markdown("Your portfolio contains ESG ETF (50%), Balanced Fund (30%), and Green Bonds (20%).")
-    with col2:
-        if st.button("⚖️ Risk level"):
-            st.chat_message("user").markdown("How risky is my portfolio?")
-            st.chat_message("assistant").markdown("Your portfolio risk level is Medium, balancing growth and safety.")
-    with col3:
-        if st.button("🛠 Change risk level"):
-            st.chat_message("user").markdown("Can I change my risk level?")
-            st.chat_message("assistant").markdown("Yes, you can adjust your risk tolerance anytime via the app or your RM.")
+    elif st.session_state.chat_stage == 1:
+        st.chat_message("assistant").markdown("Would you like to explore product performance?")
+        if st.button("📊 Compare ESG ETF vs Green Bonds"):
+            st.chat_message("user").markdown("Compare ESG ETF vs Green Bonds")
 
-    persona = users[st.session_state.username].get("persona", "Cautious")
-    st.subheader("🔐 Recommended Products")
-    allowed = persona_products.get(persona, [])
-    for prod in allowed:
-        st.markdown(f"- ✅ {prod}")
+            # Current price comparison
+            latest_prices = product_prices.iloc[-1][["ESG ETF", "Green Bonds"]]
+            st.chat_message("assistant").markdown(f"Current Prices:\n- ESG ETF: {latest_prices['ESG ETF']}\n- Green Bonds: {latest_prices['Green Bonds']}")
+
+            # Future prediction
+            esg_future = predict_future(product_prices["ESG ETF"].tolist())
+            gb_future = predict_future(product_prices["Green Bonds"].tolist())
+            st.chat_message("assistant").markdown(f"Predicted future prices (next 3 months):\n- ESG ETF: {['%.2f' % p for p in esg_future]}\n- Green Bonds: {['%.2f' % p for p in gb_future]}")
+
+            st.session_state.chat_stage = 2
+            st.rerun()
+
+    elif st.session_state.chat_stage == 2:
+        st.chat_message("assistant").markdown("Let me know if you'd like to adjust your portfolio or explore other products.")
 
     logout()
 
-# --- Relationship Manager mode ---
+# --- Relationship Manager ---
 def rm():
     st.chat_message("assistant").markdown(f"Welcome, RM {st.session_state.username} 👩‍💼")
-
-    st.subheader("👥 Clients")
-    st.write("1. Alex Tan")
-    st.write("2. Brian Lim")
-    st.write("3. Clara Wong")
-
-    st.subheader("💬 RM Options")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if st.button("📋 Client list"):
-            st.chat_message("user").markdown("Show client list")
-            st.chat_message("assistant").markdown("Clients: Alex Tan, Brian Lim, Clara Wong.")
-    with col2:
-        if st.button("💼 Recommend"):
-            st.chat_message("user").markdown("Recommend portfolio")
-            st.chat_message("assistant").markdown("A balanced portfolio with ETFs and bonds fits most clients seeking moderate growth.")
-    with col3:
-        if st.button("📨 Contact clients"):
-            st.chat_message("user").markdown("How to contact clients?")
-            st.chat_message("assistant").markdown("Use the CRM dashboard or email for client communication.")
-
+    st.write("Client list and management tools coming soon.")
     logout()
+
+# --- Visitor ---
+def visitor():
+    st.chat_message("assistant").markdown("Hi! What would you like to learn about?")
+    if st.button("💸 What is investment?"):
+        st.chat_message("user").markdown("What is investment?")
+        st.chat_message("assistant").markdown("Investment means putting money into assets to grow your wealth over time.")
+    if st.button("🏦 How to open account"):
+        st.chat_message("user").markdown("How to open account")
+        st.chat_message("assistant").markdown("Visit any of our branches or use our online portal.")
+    if st.button("📋 Fees"):
+        st.chat_message("user").markdown("What are the fees?")
+        st.chat_message("assistant").markdown("Basic accounts have zero monthly fees.")
 
 # --- Main Flow ---
 role_option = st.sidebar.selectbox("🔐 Select your role", ["Visitor", "Customer", "Relationship Manager"])
-
 if role_option == "Visitor":
     st.session_state.logged_in = False
-    normal_visitor()
-
+    visitor()
 elif role_option in ["Customer", "Relationship Manager"]:
     if not st.session_state.logged_in or st.session_state.role != role_option:
         login()
