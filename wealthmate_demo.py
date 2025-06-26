@@ -70,6 +70,10 @@ def apply_accessibility():
             .chat-message, .stMarkdown p {
                 font-size: 20px !important;
             }
+            /* Make sidebar font larger */
+            .css-1d391kg {
+                font-size: 18px !important;
+            }
         </style>
         """, unsafe_allow_html=True)
     else:
@@ -300,24 +304,49 @@ def rm():
         if st.button("⬅️ Back"):
             back()
 
-# --- Main App ---
-
-# Accessibility toggle in sidebar
+# --- Sidebar with polish ---
 with st.sidebar:
-    st.header("Settings")
-    acc_mode = st.checkbox("Accessibility Mode (Larger text/buttons)", value=st.session_state.accessibility_mode)
+    st.markdown("<h2 style='margin-bottom: 0.25rem;'>Settings ⚙️</h2>", unsafe_allow_html=True)
+
+    # Role selection with padding
+    st.markdown("<div style='padding-bottom: 0.75rem;'>", unsafe_allow_html=True)
+    role_option = st.selectbox("🔐 Select your role", ["Visitor", "Customer", "Relationship Manager"])
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Accessibility toggle with icon and label side-by-side
+    acc_col1, acc_col2 = st.columns([1, 4])
+    with acc_col1:
+        accessibility_icon = "🧑‍🦳"
+        st.markdown(f"<span style='font-size: 24px;'>{accessibility_icon}</span>", unsafe_allow_html=True)
+    with acc_col2:
+        acc_mode = st.checkbox("Elderly & Accessibility Mode", value=st.session_state.accessibility_mode)
     if acc_mode != st.session_state.accessibility_mode:
         st.session_state.accessibility_mode = acc_mode
         st.rerun()
 
-    st.markdown("---")
+    st.markdown("<hr style='margin-top:1rem; margin-bottom:1rem;'>", unsafe_allow_html=True)
 
+    # Support contact info box
+    st.markdown(
+        """
+        <div style='background-color: #f1f1f1; padding: 12px; border-radius: 8px; font-size: 14px; line-height: 1.4;'>
+        Need help? Contact HSBC Support:<br>
+        📞 Hotline: 1800-XXX-XXXX<br>
+        📧 Email: support@hsbc.com<br>
+        Or visit our <a href='https://www.hsbc.com.sg/help/' target='_blank'>Help Center</a>.
+        </div>
+        """, unsafe_allow_html=True
+    )
+
+    # Spacer pushes logout to bottom
+    st.markdown("<div style='height: 140px;'></div>", unsafe_allow_html=True)
+
+    # Logout button with icon
     if st.session_state.logged_in:
-        if st.button("Logout"):
+        if st.button("🔒 Logout"):
             logout()
 
-role_option = st.sidebar.selectbox("🔐 Select your role", ["Visitor", "Customer", "Relationship Manager"])
-
+# --- Main app logic ---
 if role_option == "Visitor":
     st.session_state.logged_in = False
     visitor()
