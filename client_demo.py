@@ -1,10 +1,9 @@
-# client_demo.py
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import numpy as np
 from sklearn.linear_model import LinearRegression
-from helpers import add_message, render_chat, back, logout, load_css
+from helpers import add_message, render_chat, back, logout, load_css, speak_text
 
 load_css()
 
@@ -48,18 +47,21 @@ def customer():
             if st.button("What is my portfolio?"):
                 add_message("user", "what is my portfolio?")
                 add_message("assistant", customer_answers["what is my portfolio?"])
+                speak_text(customer_answers["what is my portfolio?"])
                 st.session_state.chat_stage = 1
                 st.rerun()
         with col2:
             if st.button("How risky is my portfolio?"):
                 add_message("user", "how risky is my portfolio?")
                 add_message("assistant", customer_answers["how risky is my portfolio?"])
+                speak_text(customer_answers["how risky is my portfolio?"])
                 st.session_state.chat_stage = 1
                 st.rerun()
         with col3:
             if st.button("Can I change my risk level?"):
                 add_message("user", "can i change my risk level?")
                 add_message("assistant", customer_answers["can i change my risk level?"])
+                speak_text(customer_answers["can i change my risk level?"])
                 st.session_state.chat_stage = 1
                 st.rerun()
 
@@ -71,10 +73,12 @@ def customer():
                 latest_prices = product_prices.iloc[-1][["ESG ETF", "Green Bonds"]]
                 msg = f"Current Prices:\n- ESG ETF: {latest_prices['ESG ETF']}\n- Green Bonds: {latest_prices['Green Bonds']}"
                 add_message("assistant", msg)
+                speak_text(msg)
                 esg_future = predict_future(product_prices["ESG ETF"].tolist())
                 gb_future = predict_future(product_prices["Green Bonds"].tolist())
                 forecast = f"Predicted prices (next 3 months):\n- ESG ETF: {[f'{p:.2f}' for p in esg_future]}\n- Green Bonds: {[f'{p:.2f}' for p in gb_future]}"
                 add_message("assistant", forecast)
+                speak_text(forecast)
                 st.session_state.chat_stage = 2
                 st.rerun()
         with col2:
@@ -89,7 +93,9 @@ def customer():
                 persona = st.session_state.get("persona", "Cautious")
                 recommendations = persona_products.get(persona, [])
                 add_message("user", "Show me recommendations")
-                add_message("assistant", f"Based on your profile (**{persona}**), we recommend: {', '.join(recommendations)}")
+                rec_msg = f"Based on your profile (**{persona}**), we recommend: {', '.join(recommendations)}"
+                add_message("assistant", rec_msg)
+                speak_text(rec_msg)
                 st.session_state.chat_stage = 2
                 st.rerun()
 

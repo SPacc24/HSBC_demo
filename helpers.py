@@ -1,12 +1,5 @@
-# client_demo.py
 import streamlit as st
-import pandas as pd
-import plotly.express as px
-import numpy as np
-from sklearn.linear_model import LinearRegression
-#from helpers import add_message, render_chat, back, logout, load_css
 
-# helpers.py
 def load_css():
     with open("styles.css") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
@@ -27,102 +20,44 @@ def back():
         st.session_state.chat_history = st.session_state.chat_history[:-2]
         st.rerun()
 
+def clear_chat():
+    st.session_state.chat_stage = 0
+    st.session_state.chat_history = []
+    st.session_state.welcome_shown = False
+
 def logout():
-    with st.sidebar:
-        if st.button("🔒 Logout"):
-            st.session_state.logged_in = False
-            st.session_state.username = None
-            st.session_state.role = None
-            st.session_state.chat_stage = 0
-            st.session_state.chat_history = []
-            st.session_state.welcome_shown = False
-            st.rerun()
+    if st.button("🔒 Logout"):
+        st.session_state.logged_in = False
+        st.session_state.username = None
+        st.session_state.role = None
+        clear_chat()
+        st.experimental_set_query_params()  # Clear query params (forces sidebar to reset)
+        st.rerun()
 
+def logout_button_footer():
+    # We will use this in footer (return button markup for footer)
+    return """
+        <button id="logout-btn" style="
+            background-color:#0072f5; border:none; color:#fff; padding:6px 14px; border-radius:5px;
+            font-weight:600; font-size:0.9rem; cursor:pointer;">Logout</button>
+        <script>
+        const logoutBtn = window.parent.document.querySelector('#logout-btn');
+        if(logoutBtn){
+            logoutBtn.onclick = () => {
+                window.parent.postMessage({type: 'streamlit:run'}, '*');
+            };
+        }
+        </script>
+    """
 
-product_prices = pd.DataFrame({
-    "date": pd.date_range(start="2025-01-01", periods=6, freq="M"),
-    "ESG ETF": [100, 102, 105, 107, 110, 115],
-    "Green Bonds": [100, 101, 101.5, 102, 102.5, 103]
-})
-
-persona_products = {
-    "Cautious": ["Green Bonds"],
-    "Growth": ["ESG ETF", "Balanced Fund"],
-    "Aggressive": ["Tech ETF", "Crypto Index"]
-}
-
-customer_answers = {
-    "what is my portfolio?": "Your portfolio contains ESG ETF (50%), Balanced Fund (30%), and Green Bonds (20%).",
-    "how risky is my portfolio?": "Your portfolio risk level is Medium, balancing growth and safety.",
-    "can i change my risk level?": "Yes, you can adjust your risk tolerance anytime via the app or your RM."
-}
-
-def predict_future(prices):
-    x = np.arange(len(prices)).reshape(-1, 1)
-    y = np.array(prices).reshape(-1, 1)
-    model = LinearRegression()
-    model.fit(x, y)
-    future_x = np.arange(len(prices), len(prices) + 3).reshape(-1, 1)
-    predictions = model.predict(future_x)
-    return predictions.flatten().tolist()
-
-def customer():
-    render_chat()
-
-    if not st.session_state.welcome_shown:
-        add_message("assistant", f"Welcome back, {st.session_state.username}! How can I help you today?")
-        st.session_state.welcome_shown = True
-
-    if st.session_state.chat_stage == 0:
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            if st.button("What is my portfolio?"):
-                add_message("user", "what is my portfolio?")
-                add_message("assistant", customer_answers["what is my portfolio?"])
-                st.session_state.chat_stage = 1
-                st.rerun()
-        with col2:
-            if st.button("How risky is my portfolio?"):
-                add_message("user", "how risky is my portfolio?")
-                add_message("assistant", customer_answers["how risky is my portfolio?"])
-                st.session_state.chat_stage = 1
-                st.rerun()
-        with col3:
-            if st.button("Can I change my risk level?"):
-                add_message("user", "can i change my risk level?")
-                add_message("assistant", customer_answers["can i change my risk level?"])
-                st.session_state.chat_stage = 1
-                st.rerun()
-
-    elif st.session_state.chat_stage == 1:
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            if st.button("Compare ESG ETF vs Green Bonds"):
-                add_message("user", "Compare ESG ETF vs Green Bonds")
-                latest_prices = product_prices.iloc[-1][["ESG ETF", "Green Bonds"]]
-                msg = f"Current Prices:\n- ESG ETF: {latest_prices['ESG ETF']}\n- Green Bonds: {latest_prices['Green Bonds']}"
-                add_message("assistant", msg)
-                esg_future = predict_future(product_prices["ESG ETF"].tolist())
-                gb_future = predict_future(product_prices["Green Bonds"].tolist())
-                forecast = f"Predicted prices (next 3 months):\n- ESG ETF: {[f'{p:.2f}' for p in esg_future]}\n- Green Bonds: {[f'{p:.2f}' for p in gb_future]}"
-                add_message("assistant", forecast)
-                st.session_state.chat_stage = 2
-                st.rerun()
-        with col2:
-            if st.button("See historical trends"):
-                add_message("user", "See historical trends")
-                fig = px.line(product_prices, x="date", y=["ESG ETF", "Green Bonds"], title="Historical Product Prices")
-                add_message("assistant", fig)
-                st.session_state.chat_stage = 2
-                st.rerun()
-        with col3:
-            if st.button("Recommendations by Persona"):
-                persona = st.session_state.get("persona", "Cautious")
-                recommendations = persona_products.get(persona, [])
-                add_message("user", "Show me recommendations")
-                add_message("assistant", f"Based on your profile (**{persona}**), we recommend: {', '.join(recommendations)}")
-                st.session_state.chat_stage = 2
-                st.rerun()
-
-    back()
-    logout()
+def speak_text(text):
+    # JS snippet to run text-to-speech on given text
+    escaped_text = text.replace('"', '\\"').replace('\n',' ')
+    js = f"""
+    <script>
+    var msg = new SpeechSynthesisUtterance("{escaped_text}");
+    msg.rate = 1;
+    window.speechSynthesis.speak(msg);
+    </script>
+    """
+    st.markdown(js, unsafe_allow_html=True)

@@ -1,4 +1,3 @@
-# visitor_demo.py
 import streamlit as st
 from helpers import add_message, render_chat, back, load_css
 
