@@ -76,7 +76,7 @@ def back():
 
 # --- Customer chat simulation ---
 def customer():
-    st.chat_message("assistant").markdown(f"Welcome back, {st.session_state.username}! Let's explore your investments.")
+    st.chat_message("assistant").markdown(f"Welcome back, {st.session_state.username}! Let's explore your personalized wealth journey.")
 
     if st.session_state.chat_stage == 0:
         st.chat_message("assistant").markdown("How can I assist you today?")
@@ -92,12 +92,12 @@ def customer():
             st.rerun()
         if st.button("🔄 Change Risk Level"):
             st.chat_message("user").markdown("Change Risk Level")
-            st.chat_message("assistant").markdown("You can adjust your risk tolerance via the settings page or RM.")
+            st.chat_message("assistant").markdown("You can adjust your risk tolerance via the app or consult your Relationship Manager.")
             st.session_state.chat_stage = 1
             st.rerun()
 
     elif st.session_state.chat_stage == 1:
-        st.chat_message("assistant").markdown("Would you like to explore product performance or ask more?")
+        st.chat_message("assistant").markdown("What would you like to do next?")
         if st.button("📊 Compare ESG ETF vs Green Bonds"):
             st.chat_message("user").markdown("Compare ESG ETF vs Green Bonds")
             latest_prices = product_prices.iloc[-1][["ESG ETF", "Green Bonds"]]
@@ -113,15 +113,17 @@ def customer():
             st.chat_message("assistant").plotly_chart(fig)
             st.session_state.chat_stage = 2
             st.rerun()
-        if st.button("❓ Why this allocation?"):
-            st.chat_message("user").markdown("Why this allocation?")
-            st.chat_message("assistant").markdown("This mix is based on your medium risk profile, blending growth and security.")
+        if st.button("📌 Recommend based on persona"):
+            persona = users[st.session_state.username].get("persona", "Cautious")
+            recommendations = persona_products.get(persona, [])
+            st.chat_message("user").markdown("Show me recommendations")
+            st.chat_message("assistant").markdown(f"Based on your profile (**{persona}**), we recommend: {', '.join(recommendations)}")
             st.session_state.chat_stage = 2
             st.rerun()
         back()
 
     elif st.session_state.chat_stage == 2:
-        st.chat_message("assistant").markdown("Let me know if you'd like to adjust your portfolio or explore other products.")
+        st.chat_message("assistant").markdown("Would you like help making changes or viewing more projections?")
         back()
 
     logout()
@@ -129,21 +131,26 @@ def customer():
 # --- Relationship Manager ---
 def rm():
     st.chat_message("assistant").markdown(f"Welcome, RM {st.session_state.username} 👩‍💼")
-    st.write("Client list and management tools coming soon.")
+    st.markdown("""
+    - View client investment behavior
+    - Recommend products aligned with client values
+    - Prepare reports across international clients
+    - Assist in onboarding using AI insights
+    """)
     logout()
 
 # --- Visitor ---
 def visitor():
-    st.chat_message("assistant").markdown("Hi! What would you like to learn about?")
+    st.chat_message("assistant").markdown("Hi! I’m WealthMate. Ask me anything about investments or opening an account.")
     if st.button("💸 What is investment?"):
         st.chat_message("user").markdown("What is investment?")
         st.chat_message("assistant").markdown("Investment means putting money into assets to grow your wealth over time.")
     if st.button("🏦 How to open account"):
         st.chat_message("user").markdown("How to open account")
-        st.chat_message("assistant").markdown("Visit any of our branches or use our online portal.")
+        st.chat_message("assistant").markdown("Visit any of our branches or use our secure online onboarding portal.")
     if st.button("📋 Fees"):
         st.chat_message("user").markdown("What are the fees?")
-        st.chat_message("assistant").markdown("Basic accounts have zero monthly fees.")
+        st.chat_message("assistant").markdown("Basic accounts have zero monthly fees. Premium options are available.")
 
 # --- Main Flow ---
 role_option = st.sidebar.selectbox("🔐 Select your role", ["Visitor", "Customer", "Relationship Manager"])
