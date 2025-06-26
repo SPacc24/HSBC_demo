@@ -44,3 +44,15 @@ def customer():
                     st.rerun()
 
     back()
+# Add Footer
+st.markdown("---")  # Horizontal line for separation
+footer_cols = st.columns([1, 1])
+
+with footer_cols[0]:
+    if st.button("Accessibility Options"):
+        st.info("Accessibility options will be available soon.")  # Or add actual feature
+
+with footer_cols[1]:
+    if st.button("Log Out"):
+        from helpers import logout
+        logout()
