@@ -1,0 +1,34 @@
+/* styles.css */
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: rgba(250, 250, 250, 0.95);
+    color: #333;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    z-index: 999;
+    font-family: Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+    .footer {
+        background-color: #1e1e1e;
+        color: white;
+    }
+    .footer a {
+        color: #aadfff;
+    }
+}
+
+.footer a {
+    text-decoration: none;
+    color: #0066cc;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}

@@ -4,7 +4,9 @@ import pandas as pd
 import plotly.express as px
 import numpy as np
 from sklearn.linear_model import LinearRegression
-from helpers import add_message, render_chat, back, logout
+from helpers import add_message, render_chat, back, logout, load_css
+
+load_css()
 
 product_prices = pd.DataFrame({
     "date": pd.date_range(start="2025-01-01", periods=6, freq="M"),

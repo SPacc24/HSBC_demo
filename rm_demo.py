@@ -1,6 +1,8 @@
 # rm_demo.py
 import streamlit as st
-from helpers import logout
+from helpers import add_message, render_chat, back, logout, load_css
+
+load_css()
 
 rm_answers = {
     "show client list": "Clients: Alex Tan, Brian Lim, Clara Wong.",
@@ -11,15 +13,42 @@ rm_answers = {
 }
 
 def rm():
-    if not st.session_state.chat_history:
-        st.session_state.chat_history = [("assistant", f"Welcome, RM {st.session_state.username} 👩‍💼 How can I assist you today?")]
+    render_chat()
 
-    for role, msg in st.session_state.chat_history:
-        st.chat_message(role).markdown(msg)
+    if not st.session_state.welcome_shown:
+        add_message("assistant", f"Welcome, RM {st.session_state.username} 👩‍💼 How can I assist you today?")
+        st.session_state.welcome_shown = True
 
-    for q in rm_answers:
-        if st.button(q.capitalize()):
-            st.chat_message("user").markdown(q)
-            st.chat_message("assistant").markdown(rm_answers[q])
+    col1, col2, col3 = st.columns(3)
+    buttons = list(rm_answers.keys())
 
+    with col1:
+        if st.button(buttons[0].capitalize()):
+            add_message("user", buttons[0])
+            add_message("assistant", rm_answers[buttons[0]])
+            st.rerun()
+    with col2:
+        if st.button(buttons[1].capitalize()):
+            add_message("user", buttons[1])
+            add_message("assistant", rm_answers[buttons[1]])
+            st.rerun()
+    with col3:
+        if st.button(buttons[2].capitalize()):
+            add_message("user", buttons[2])
+            add_message("assistant", rm_answers[buttons[2]])
+            st.rerun()
+
+    col4, col5 = st.columns(2)
+    with col4:
+        if st.button(buttons[3].capitalize()):
+            add_message("user", buttons[3])
+            add_message("assistant", rm_answers[buttons[3]])
+            st.rerun()
+    with col5:
+        if st.button(buttons[4].capitalize()):
+            add_message("user", buttons[4])
+            add_message("assistant", rm_answers[buttons[4]])
+            st.rerun()
+
+    back()
     logout()
