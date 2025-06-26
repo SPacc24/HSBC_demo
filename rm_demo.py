@@ -1,75 +1,43 @@
 import streamlit as st
-from helpers import add_message, render_chat, back, load_css, speak_text
+from helpers import add_message, render_chat, back
 
-rm_answers_set_1 = {
+rm_answers_stage_0 = {
     "show client list": "Clients: Alex Tan, Brian Lim, Clara Wong.",
     "recommend portfolio": "A balanced portfolio with ETFs and bonds fits most clients seeking moderate growth.",
     "how to contact clients?": "Use the CRM dashboard or email for client communication.",
 }
 
-rm_answers_set_2 = {
-    "onboard new client": "Guide them through the e-KYC process and submit necessary documentation.",
-    "portfolio performance": "Access each client profile to view their portfolio trend charts and performance reports.",
-    "client meetings": "Schedule meetings using the integrated calendar tool in the CRM.",
+rm_answers_stage_1 = {
+    "client meeting tips": "Always understand client goals and tailor your portfolio recommendations accordingly.",
+    "update client info": "You can update client info using the CRM portal under 'Client Profiles'.",
+    "schedule follow-ups": "Use the CRM calendar or your email to schedule follow-up meetings.",
 }
 
 def rm():
-    load_css()
+    if not st.session_state.chat_history:
+        add_message("assistant", f"Welcome, RM {st.session_state.username} 👩‍💼 How can I help you today?")
+        st.session_state.chat_stage = 0
+
     render_chat()
 
-    if "rm_stage" not in st.session_state:
-        st.session_state.rm_stage = 0
+    if st.session_state.chat_stage == 0:
+        cols = st.columns(3)
+        for i, (q, _) in enumerate(rm_answers_stage_0.items()):
+            with cols[i]:
+                if st.button(q.capitalize(), key=f"rm_q0_{i}"):
+                    add_message("user", q)
+                    add_message("assistant", rm_answers_stage_0[q])
+                    st.session_state.chat_stage = 1
+                    st.rerun()
 
-    if not st.session_state.get("rm_welcome_shown", False):
-        add_message("assistant", f"Welcome, RM {st.session_state.username} 👩‍💼 How can I assist you today?")
-        st.session_state.rm_welcome_shown = True
+    elif st.session_state.chat_stage == 1:
+        cols = st.columns(3)
+        for i, (q, _) in enumerate(rm_answers_stage_1.items()):
+            with cols[i]:
+                if st.button(q.capitalize(), key=f"rm_q1_{i}"):
+                    add_message("user", q)
+                    add_message("assistant", rm_answers_stage_1[q])
+                    # stay at stage 1
+                    st.rerun()
 
-    if st.session_state.rm_stage == 0:
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            if st.button("Show Client List"):
-                add_message("user", "show client list")
-                add_message("assistant", rm_answers_set_1["show client list"])
-                speak_text(rm_answers_set_1["show client list"])
-                st.session_state.rm_stage = 1
-                st.rerun()
-        with col2:
-            if st.button("Recommend Portfolio"):
-                add_message("user", "recommend portfolio")
-                add_message("assistant", rm_answers_set_1["recommend portfolio"])
-                speak_text(rm_answers_set_1["recommend portfolio"])
-                st.session_state.rm_stage = 1
-                st.rerun()
-        with col3:
-            if st.button("How to Contact Clients?"):
-                add_message("user", "how to contact clients?")
-                add_message("assistant", rm_answers_set_1["how to contact clients?"])
-                speak_text(rm_answers_set_1["how to contact clients?"])
-                st.session_state.rm_stage = 1
-                st.rerun()
-
-    elif st.session_state.rm_stage == 1:
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            if st.button("Onboard New Client"):
-                add_message("user", "onboard new client")
-                add_message("assistant", rm_answers_set_2["onboard new client"])
-                speak_text(rm_answers_set_2["onboard new client"])
-                st.session_state.rm_stage = 2
-                st.rerun()
-        with col2:
-            if st.button("Portfolio Performance"):
-                add_message("user", "portfolio performance")
-                add_message("assistant", rm_answers_set_2["portfolio performance"])
-                speak_text(rm_answers_set_2["portfolio performance"])
-                st.session_state.rm_stage = 2
-                st.rerun()
-        with col3:
-            if st.button("Client Meetings"):
-                add_message("user", "client meetings")
-                add_message("assistant", rm_answers_set_2["client meetings"])
-                speak_text(rm_answers_set_2["client meetings"])
-                st.session_state.rm_stage = 2
-                st.rerun()
-
-    back(stage_key="rm_stage")
+    back()

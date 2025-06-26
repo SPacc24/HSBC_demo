@@ -1,5 +1,5 @@
 body, .main {
-    padding-bottom: 70px; /* to prevent footer overlap */
+    padding-bottom: 80px; /* room for fixed footer */
     margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -22,20 +22,6 @@ body, .main {
     gap: 10px;
 }
 
-.accessibility-mode {
-    font-size: 20px !important;
-    line-height: 1.5 !important;
-}
-
-.accessibility-mode button {
-    padding: 14px 24px !important;
-    font-size: 18px !important;
-}
-
-.accessibility-mode a {
-    font-size: 18px !important;
-}
-
 @media (max-width: 600px) {
     .footer {
         font-size: 0.85rem;
@@ -43,5 +29,12 @@ body, .main {
         flex-direction: column;
         align-items: center;
         text-align: center;
+        gap: 8px;
     }
+}
+
+/* Accessibility Mode overrides */
+.accessibility-mode {
+    font-size: 18px !important;
+    line-height: 1.6 !important;
 }

@@ -1,12 +1,11 @@
 import streamlit as st
-from helpers import load_css, add_message, clear_chat, logout
+from helpers import load_css, add_message, clear_chat
 from visitor_demo import visitor
 from client_demo import customer
 from rm_demo import rm
 
 st.set_page_config(page_title="WealthMate Demo", layout="wide")
 
-# --- Fake user database ---
 users = {
     "alex": {"password": "client123", "role": "Customer", "persona": "Cautious"},
     "cheryl": {"password": "rm123", "role": "Relationship Manager"},
@@ -27,7 +26,6 @@ if "chat_history" not in st.session_state:
 if "accessibility_mode" not in st.session_state:
     st.session_state.accessibility_mode = False
 
-# --- Login Function ---
 def login(role):
     st.title(f"{role} Login")
     username = st.text_input("Username", key="login_username")
@@ -44,21 +42,32 @@ def login(role):
         else:
             st.error("Invalid credentials.")
 
-# --- Role selection & routing ---
 def main():
     load_css()
+
+    # Add/remove accessibility CSS class to <body> tag using JS injection
+    if st.session_state.accessibility_mode:
+        st.markdown(
+            """
+            <style>
+            body {
+                font-size: 18px !important;
+                line-height: 1.6 !important;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
 
     if not st.session_state.logged_in:
         role_option = st.sidebar.selectbox("🔐 Select your role", ["Visitor", "Customer", "Relationship Manager"])
         if role_option == "Visitor":
-            # No login for visitor
             visitor()
         elif role_option == "Customer":
             login("Customer")
         elif role_option == "Relationship Manager":
             login("Relationship Manager")
     else:
-        # User logged in
         if st.session_state.role == "Customer":
             customer()
         elif st.session_state.role == "Relationship Manager":
@@ -92,9 +101,9 @@ def render_footer():
     if st.session_state.accessibility_mode:
         footer_style += " font-size: 18px; padding: 14px 20px;"
 
-    accessibility_text = "🧑‍🦳 Accessibility Mode: ON" if st.session_state.accessibility_mode else "👵 Accessibility Mode: OFF"
+    accessibility_text = "🧑‍🦳 Accessibility: ON" if st.session_state.accessibility_mode else "👵 Accessibility: OFF"
 
-    col1, col2, col3 = st.columns([1, 6, 1], gap="small")
+    col1, col2, col3 = st.columns([1, 6, 3], gap="small")
 
     with col1:
         if st.button(accessibility_text, key="accessibility_toggle"):
