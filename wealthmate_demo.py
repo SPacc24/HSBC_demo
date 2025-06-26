@@ -62,7 +62,7 @@ def login():
             st.session_state.username = username
             st.session_state.role = users[username]["role"]
             st.success(f"Logged in as {username} ({st.session_state.role})")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Invalid credentials.")
 
@@ -71,7 +71,7 @@ def logout():
         st.session_state.logged_in = False
         st.session_state.username = None
         st.session_state.role = None
-        st.experimental_rerun()
+        st.rerun()
 
 # --- Visitor mode ---
 def normal_visitor():
