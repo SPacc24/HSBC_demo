@@ -1,8 +1,6 @@
 import streamlit as st
 from helpers import add_message, render_chat, back, load_css
 
-load_css()
-
 generic_answers = {
     "what is investment?": "Investment means putting money into assets to grow your wealth over time.",
     "how to open an account?": "Visit any of our branches or use our online portal to open an account.",
@@ -10,6 +8,7 @@ generic_answers = {
 }
 
 def visitor():
+    load_css()
     if not st.session_state.chat_history:
         add_message("assistant", "Hi! 👋 How can I help you today?")
         st.session_state.chat_stage = 0
@@ -37,4 +36,4 @@ def visitor():
                 st.session_state.chat_stage = 1
                 st.rerun()
 
-    back()
+    back(stage_key="chat_stage")

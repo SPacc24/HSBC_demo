@@ -1,28 +1,23 @@
 import streamlit as st
-import pandas as pd
 import plotly.express as px
 import numpy as np
 from sklearn.linear_model import LinearRegression
-from helpers import add_message, render_chat, back, logout, load_css, speak_text
+from helpers import add_message, render_chat, back, load_css, speak_text
 
-load_css()
+product_prices = px.data.stocks()  # Using built-in sample, replace with your own if needed
+product_prices = product_prices.rename(columns={"date": "date", "GOOG": "ESG ETF", "AAPL": "Green Bonds"})
+product_prices = product_prices[["date", "ESG ETF", "Green Bonds"]].tail(30)
 
-product_prices = pd.DataFrame({
-    "date": pd.date_range(start="2025-01-01", periods=6, freq="M"),
-    "ESG ETF": [100, 102, 105, 107, 110, 115],
-    "Green Bonds": [100, 101, 101.5, 102, 102.5, 103]
-})
+customer_answers = {
+    "what is my portfolio?": "Your portfolio contains ESG ETF (50%), Balanced Fund (30%), and Green Bonds (20%).",
+    "how risky is my portfolio?": "Your portfolio risk level is Medium, balancing growth and safety.",
+    "can i change my risk level?": "Yes, you can adjust your risk tolerance anytime via the app or your RM.",
+}
 
 persona_products = {
     "Cautious": ["Green Bonds"],
     "Growth": ["ESG ETF", "Balanced Fund"],
     "Aggressive": ["Tech ETF", "Crypto Index"]
-}
-
-customer_answers = {
-    "what is my portfolio?": "Your portfolio contains ESG ETF (50%), Balanced Fund (30%), and Green Bonds (20%).",
-    "how risky is my portfolio?": "Your portfolio risk level is Medium, balancing growth and safety.",
-    "can i change my risk level?": "Yes, you can adjust your risk tolerance anytime via the app or your RM."
 }
 
 def predict_future(prices):
@@ -35,9 +30,10 @@ def predict_future(prices):
     return predictions.flatten().tolist()
 
 def customer():
+    load_css()
     render_chat()
 
-    if not st.session_state.welcome_shown:
+    if not st.session_state.get("welcome_shown", False):
         add_message("assistant", f"Welcome back, {st.session_state.username}! How can I help you today?")
         st.session_state.welcome_shown = True
 
@@ -71,7 +67,7 @@ def customer():
             if st.button("Compare ESG ETF vs Green Bonds"):
                 add_message("user", "Compare ESG ETF vs Green Bonds")
                 latest_prices = product_prices.iloc[-1][["ESG ETF", "Green Bonds"]]
-                msg = f"Current Prices:\n- ESG ETF: {latest_prices['ESG ETF']}\n- Green Bonds: {latest_prices['Green Bonds']}"
+                msg = f"Current Prices:\n- ESG ETF: {latest_prices['ESG ETF']:.2f}\n- Green Bonds: {latest_prices['Green Bonds']:.2f}"
                 add_message("assistant", msg)
                 speak_text(msg)
                 esg_future = predict_future(product_prices["ESG ETF"].tolist())
@@ -99,5 +95,4 @@ def customer():
                 st.session_state.chat_stage = 2
                 st.rerun()
 
-    back()
-    logout()
+    back(stage_key="chat_stage")

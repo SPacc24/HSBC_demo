@@ -1,7 +1,5 @@
 import streamlit as st
-from helpers import add_message, render_chat, back, logout, load_css, speak_text
-
-load_css()
+from helpers import add_message, render_chat, back, load_css, speak_text
 
 rm_answers_set_1 = {
     "show client list": "Clients: Alex Tan, Brian Lim, Clara Wong.",
@@ -16,14 +14,15 @@ rm_answers_set_2 = {
 }
 
 def rm():
+    load_css()
     render_chat()
 
     if "rm_stage" not in st.session_state:
         st.session_state.rm_stage = 0
 
-    if not st.session_state.welcome_shown:
+    if not st.session_state.get("rm_welcome_shown", False):
         add_message("assistant", f"Welcome, RM {st.session_state.username} 👩‍💼 How can I assist you today?")
-        st.session_state.welcome_shown = True
+        st.session_state.rm_welcome_shown = True
 
     if st.session_state.rm_stage == 0:
         col1, col2, col3 = st.columns(3)
@@ -73,5 +72,4 @@ def rm():
                 st.session_state.rm_stage = 2
                 st.rerun()
 
-    back()
-    logout()
+    back(stage_key="rm_stage")
