@@ -1,3 +1,4 @@
+# main_app.py
 import streamlit as st
 from visitor_demo import visitor
 from client_demo import customer
@@ -11,26 +12,21 @@ users = {
 }
 
 # --- Session state setup ---
-for key, default in {
-    "logged_in": False,
-    "role": None,
-    "username": None,
-    "chat_stage": 0,
-    "chat_history": [],
-    "welcome_shown": False,
-    "accessibility_mode": False,
-}.items():
-    if key not in st.session_state:
-        st.session_state[key] = default
+def init_session():
+    defaults = {
+        "logged_in": False,
+        "role": None,
+        "username": None,
+        "chat_stage": 0,
+        "chat_history": [],
+        "welcome_shown": False,
+        "accessibility_mode": False,
+    }
+    for key, val in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = val
 
-# --- Accessibility toggle icon ---
-def accessibility_toggle():
-    acc_icon = "🧑‍🦳"  # or ♿
-    acc_mode = st.session_state.accessibility_mode
-    if st.sidebar.button(acc_icon):
-        st.session_state.accessibility_mode = not acc_mode
-        st.rerun()
-    st.sidebar.markdown(f"**Accessibility mode:** {'On' if acc_mode else 'Off'}")
+init_session()
 
 # --- Login ---
 def login():
@@ -50,61 +46,47 @@ def login():
         else:
             st.error("Invalid credentials.")
 
-# --- Sidebar ---
-with st.sidebar:
-    st.markdown("<h2 style='margin-bottom: 0.25rem;'>Settings ⚙️</h2>", unsafe_allow_html=True)
-    
-    if not st.session_state.logged_in:
-        role_option = st.selectbox("🔐 Select your role", ["Visitor", "Customer", "Relationship Manager"])
-    else:
-        role_option = st.session_state.role
-        st.markdown(f"**Role:** {role_option}")
-
-    # Accessibility toggle icon (no checkbox)
-    acc_icon = "🧑‍🦳"
-    acc_mode = st.session_state.accessibility_mode
-    if st.button(acc_icon):
-        st.session_state.accessibility_mode = not acc_mode
-        st.rerun()
-    st.markdown(f"**Accessibility mode:** {'On' if acc_mode else 'Off'}")
-
-    # Support info box with theme-neutral style
-    st.markdown(
-        """
-        <style>
-        .support-box {
-            padding: 12px;
-            border-radius: 8px;
-            background-color: var(--background, #f1f1f1);
-            color: var(--text, #333);
-            font-size: 14px;
-            line-height: 1.4;
-        }
-        </style>
-        <div class="support-box">
-        Need help? Contact HSBC Support:<br>
-        📞 Hotline: 1800-XXX-XXXX<br>
-        📧 Email: support@hsbc.com<br>
-        Or visit our <a href='https://www.hsbc.com.sg/help/' target='_blank'>Help Center</a>.
+# --- Footer ---
+def render_footer():
+    st.markdown("""
+    <hr style='margin-top: 2rem;'>
+    <div style='display: flex; justify-content: space-between; font-size: 0.9rem;'>
+        <div>
+            <a href='#' onclick="window.location.reload();" title='Toggle accessibility mode'>🧑‍🦳 Accessibility</a>
         </div>
-        """, unsafe_allow_html=True
-    )
+        <div>
+            📞 Need help? Contact HSBC Support:<br>
+            📞 1800-XXX-XXXX | 📧 support@hsbc.com | <a href='https://www.hsbc.com.sg/help/' target='_blank'>Help Center</a>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # Spacer pushes logout to bottom
-    st.markdown("<div style='height: 140px;'></div>", unsafe_allow_html=True)
+# --- Sidebar role lock ---
+if not st.session_state.logged_in:
+    role_option = st.sidebar.selectbox("🔐 Select your role", ["Visitor", "Customer", "Relationship Manager"])
+else:
+    role_option = st.session_state.role
+    st.sidebar.markdown(f"**Role:** {role_option}")
 
-    # Logout button at bottom
+# --- Main App Logic ---
+if role_option == "Visitor":
+    st.session_state.logged_in = False
+    visitor()
+elif role_option in ["Customer", "Relationship Manager"]:
+    if not st.session_state.logged_in or st.session_state.role != role_option:
+        login()
+    else:
+        if role_option == "Customer":
+            customer()
+        else:
+            rm()
+
+# --- Logout button (always on sidebar bottom) ---
+with st.sidebar:
+    st.markdown("""<div style='height: 100px;'></div>""", unsafe_allow_html=True)
     if st.session_state.logged_in:
         if st.button("🔒 Logout"):
             logout()
 
-# --- Main app logic ---
-if not st.session_state.logged_in or (st.session_state.role != role_option):
-    login()
-else:
-    if role_option == "Visitor":
-        visitor()
-    elif role_option == "Customer":
-        customer()
-    elif role_option == "Relationship Manager":
-        rm()
+# --- Footer with accessibility and help info ---
+render_footer()

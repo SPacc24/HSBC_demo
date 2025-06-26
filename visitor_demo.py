@@ -1,16 +1,20 @@
+# visitor_demo.py
 import streamlit as st
 from helpers import add_message, render_chat, back
 
+# --- Visitor predefined Q&A ---
 generic_answers = {
     "what is investment?": "Investment means putting money into assets to grow your wealth over time.",
     "how to open an account?": "Visit any of our branches or use our online portal to open an account.",
     "what are the fees?": "Fees depend on your account type. Basic accounts have zero monthly fees.",
+    "what services do you offer?": "We offer savings, investments, retirement planning, and wealth management services.",
+    "where are your branches?": "We have branches islandwide — check our website for the full list."
 }
 
 def visitor():
-    if not st.session_state.welcome_shown:
+    if not st.session_state.chat_history:
         add_message("assistant", "Hi! 👋 How can I help you today?")
-        st.session_state.welcome_shown = True
+        st.session_state.chat_stage = 0
 
     render_chat()
 
@@ -38,25 +42,16 @@ def visitor():
     elif st.session_state.chat_stage == 1:
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("Tell me more about investments"):
-                add_message("user", "tell me more about investments")
-                add_message("assistant", "Investments can include stocks, bonds, mutual funds, and more.")
+            if st.button("What services do you offer?"):
+                add_message("user", "what services do you offer?")
+                add_message("assistant", generic_answers["what services do you offer?"])
                 st.session_state.chat_stage = 2
                 st.rerun()
         with col2:
-            if st.button("How to manage fees?"):
-                add_message("user", "how to manage fees?")
-                add_message("assistant", "You can reduce fees by choosing fee-free accounts or investing in low-cost funds.")
+            if st.button("Where are your branches?"):
+                add_message("user", "where are your branches?")
+                add_message("assistant", generic_answers["where are your branches?"])
                 st.session_state.chat_stage = 2
                 st.rerun()
 
-    elif st.session_state.chat_stage == 2:
-        if st.button("Back to start"):
-            st.session_state.chat_stage = 0
-            st.session_state.chat_history = []
-            st.session_state.welcome_shown = False
-            st.rerun()
-
-    if st.session_state.chat_stage > 0:
-        if st.button("⬅️ Back"):
-            back()
+    back()

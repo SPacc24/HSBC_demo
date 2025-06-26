@@ -1,16 +1,5 @@
+# helpers.py
 import streamlit as st
-import numpy as np
-import plotly.express as px
-from sklearn.linear_model import LinearRegression
-
-def predict_future(prices):
-    x = np.arange(len(prices)).reshape(-1,1)
-    y = np.array(prices).reshape(-1,1)
-    model = LinearRegression()
-    model.fit(x,y)
-    future_x = np.arange(len(prices), len(prices)+3).reshape(-1,1)
-    preds = model.predict(future_x)
-    return preds.flatten().tolist()
 
 def add_message(role, content):
     st.session_state.chat_history.append((role, content))

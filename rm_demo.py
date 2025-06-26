@@ -1,47 +1,25 @@
+# rm_demo.py
 import streamlit as st
-from helpers import add_message, render_chat, back
+from helpers import logout
 
 rm_answers = {
     "show client list": "Clients: Alex Tan, Brian Lim, Clara Wong.",
     "recommend portfolio": "A balanced portfolio with ETFs and bonds fits most clients seeking moderate growth.",
     "how to contact clients?": "Use the CRM dashboard or email for client communication.",
+    "how to onboard new client?": "Guide them through the e-KYC process and submit necessary documentation.",
+    "view portfolio performance": "Access each client profile to view their portfolio trend charts and performance reports."
 }
 
 def rm():
-    if not st.session_state.welcome_shown:
-        add_message("assistant", f"Welcome, RM {st.session_state.username} 👩‍💼 How can I help you today?")
-        st.session_state.welcome_shown = True
+    if not st.session_state.chat_history:
+        st.session_state.chat_history = [("assistant", f"Welcome, RM {st.session_state.username} 👩‍💼 How can I assist you today?")]
 
-    render_chat()
+    for role, msg in st.session_state.chat_history:
+        st.chat_message(role).markdown(msg)
 
-    if st.session_state.chat_stage == 0:
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            if st.button("Show client list"):
-                add_message("user", "show client list")
-                add_message("assistant", rm_answers["show client list"])
-                st.session_state.chat_stage = 1
-                st.rerun()
-        with col2:
-            if st.button("Recommend portfolio"):
-                add_message("user", "recommend portfolio")
-                add_message("assistant", rm_answers["recommend portfolio"])
-                st.session_state.chat_stage = 1
-                st.rerun()
-        with col3:
-            if st.button("How to contact clients?"):
-                add_message("user", "how to contact clients?")
-                add_message("assistant", rm_answers["how to contact clients?"])
-                st.session_state.chat_stage = 1
-                st.rerun()
+    for q in rm_answers:
+        if st.button(q.capitalize()):
+            st.chat_message("user").markdown(q)
+            st.chat_message("assistant").markdown(rm_answers[q])
 
-    elif st.session_state.chat_stage == 1:
-        if st.button("Back to main menu"):
-            st.session_state.chat_stage = 0
-            st.session_state.chat_history = []
-            st.session_state.welcome_shown = False
-            st.rerun()
-
-    if st.session_state.chat_stage > 0:
-        if st.button("⬅️ Back"):
-            back()
+    logout()
