@@ -68,6 +68,12 @@ def logout():
         st.session_state.chat_stage = 0
         st.rerun()
 
+# --- Back Button ---
+def back():
+    if st.button("⬅️ Back") and st.session_state.chat_stage > 0:
+        st.session_state.chat_stage -= 1
+        st.rerun()
+
 # --- Customer chat simulation ---
 def customer():
     st.chat_message("assistant").markdown(f"Welcome back, {st.session_state.username}! Let's explore your investments.")
@@ -91,24 +97,32 @@ def customer():
             st.rerun()
 
     elif st.session_state.chat_stage == 1:
-        st.chat_message("assistant").markdown("Would you like to explore product performance?")
+        st.chat_message("assistant").markdown("Would you like to explore product performance or ask more?")
         if st.button("📊 Compare ESG ETF vs Green Bonds"):
             st.chat_message("user").markdown("Compare ESG ETF vs Green Bonds")
-
-            # Current price comparison
             latest_prices = product_prices.iloc[-1][["ESG ETF", "Green Bonds"]]
             st.chat_message("assistant").markdown(f"Current Prices:\n- ESG ETF: {latest_prices['ESG ETF']}\n- Green Bonds: {latest_prices['Green Bonds']}")
-
-            # Future prediction
             esg_future = predict_future(product_prices["ESG ETF"].tolist())
             gb_future = predict_future(product_prices["Green Bonds"].tolist())
             st.chat_message("assistant").markdown(f"Predicted future prices (next 3 months):\n- ESG ETF: {['%.2f' % p for p in esg_future]}\n- Green Bonds: {['%.2f' % p for p in gb_future]}")
-
             st.session_state.chat_stage = 2
             st.rerun()
+        if st.button("📈 See historical trends"):
+            st.chat_message("user").markdown("See historical trends")
+            fig = px.line(product_prices, x="date", y=["ESG ETF", "Green Bonds"], title="Historical Product Prices")
+            st.chat_message("assistant").plotly_chart(fig)
+            st.session_state.chat_stage = 2
+            st.rerun()
+        if st.button("❓ Why this allocation?"):
+            st.chat_message("user").markdown("Why this allocation?")
+            st.chat_message("assistant").markdown("This mix is based on your medium risk profile, blending growth and security.")
+            st.session_state.chat_stage = 2
+            st.rerun()
+        back()
 
     elif st.session_state.chat_stage == 2:
         st.chat_message("assistant").markdown("Let me know if you'd like to adjust your portfolio or explore other products.")
+        back()
 
     logout()
 
