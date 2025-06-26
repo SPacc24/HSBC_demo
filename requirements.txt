@@ -2,3 +2,4 @@ streamlit>=1.12
 plotly
 pandas
 numpy
+LinearRegression
