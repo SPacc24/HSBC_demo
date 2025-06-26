@@ -1,7 +1,7 @@
 import streamlit as st
-import plotly.express as px
 import pandas as pd
 import numpy as np
+import plotly.express as px
 from sklearn.linear_model import LinearRegression
 
 st.set_page_config(page_title="WealthMate Demo", layout="wide")
@@ -45,33 +45,52 @@ persona_products = {
     "Aggressive": ["Tech ETF", "Crypto Index"]
 }
 
-# --- Session state setup ---
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-    st.session_state.role = None
-    st.session_state.username = None
+# --- Session state defaults ---
+for key, default in {
+    "logged_in": False,
+    "role": None,
+    "username": None,
+    "chat_stage": 0,
+    "chat_history": [],
+    "welcome_shown": False,
+    "accessibility_mode": False,
+}.items():
+    if key not in st.session_state:
+        st.session_state[key] = default
 
-if "chat_stage" not in st.session_state:
-    st.session_state.chat_stage = 0
+# --- Accessibility CSS ---
+def apply_accessibility():
+    if st.session_state.accessibility_mode:
+        st.markdown("""
+        <style>
+            button, .stButton > button {
+                font-size: 20px !important;
+                padding: 15px 25px !important;
+            }
+            .chat-message, .stMarkdown p {
+                font-size: 20px !important;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("", unsafe_allow_html=True)
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+apply_accessibility()
 
-# --- Predictive Analysis Helper ---
+# --- Predictive price forecast ---
 def predict_future(prices):
-    x = np.arange(len(prices)).reshape(-1, 1)
-    y = np.array(prices).reshape(-1, 1)
+    x = np.arange(len(prices)).reshape(-1,1)
+    y = np.array(prices).reshape(-1,1)
     model = LinearRegression()
-    model.fit(x, y)
-    future_x = np.arange(len(prices), len(prices) + 3).reshape(-1, 1)
-    predictions = model.predict(future_x)
-    return predictions.flatten().tolist()
+    model.fit(x,y)
+    future_x = np.arange(len(prices), len(prices)+3).reshape(-1,1)
+    preds = model.predict(future_x)
+    return preds.flatten().tolist()
 
-# --- Add message to history ---
+# --- Helpers to add/render chat ---
 def add_message(role, content):
     st.session_state.chat_history.append((role, content))
 
-# --- Render Chat ---
 def render_chat():
     for role, msg in st.session_state.chat_history:
         if isinstance(msg, str):
@@ -79,7 +98,26 @@ def render_chat():
         else:
             st.chat_message(role).plotly_chart(msg)
 
-# --- Login ---
+# --- Logout ---
+def logout():
+    st.session_state.logged_in = False
+    st.session_state.username = None
+    st.session_state.role = None
+    st.session_state.chat_stage = 0
+    st.session_state.chat_history = []
+    st.session_state.welcome_shown = False
+    st.rerun()
+
+# --- Back ---
+def back():
+    if st.session_state.chat_stage > 0:
+        st.session_state.chat_stage -= 1
+        # Remove last 2 messages (user + assistant)
+        if len(st.session_state.chat_history) >= 2:
+            st.session_state.chat_history = st.session_state.chat_history[:-2]
+        st.rerun()
+
+# --- Login page ---
 def login():
     st.title("WealthMate Login")
     username = st.text_input("Username")
@@ -90,31 +128,18 @@ def login():
             st.session_state.username = username
             st.session_state.role = users[username]["role"]
             st.success(f"Logged in as {username} ({st.session_state.role})")
+            st.session_state.chat_history = []
+            st.session_state.chat_stage = 0
+            st.session_state.welcome_shown = False
             st.rerun()
         else:
             st.error("Invalid credentials.")
 
-def logout():
-    if st.button("Logout"):
-        st.session_state.logged_in = False
-        st.session_state.username = None
-        st.session_state.role = None
-        st.session_state.chat_stage = 0
-        st.session_state.chat_history = []
-        st.rerun()
-
-# --- Back Button ---
-def back():
-    if st.button("⬅️ Back") and st.session_state.chat_stage > 0:
-        st.session_state.chat_stage -= 1
-        st.session_state.chat_history = st.session_state.chat_history[:-2]
-        st.rerun()
-
 # --- Visitor chat ---
 def visitor():
-    if not st.session_state.chat_history:
+    if not st.session_state.welcome_shown:
         add_message("assistant", "Hi! 👋 How can I help you today?")
-        st.session_state.chat_stage = 0
+        st.session_state.welcome_shown = True
 
     render_chat()
 
@@ -139,14 +164,41 @@ def visitor():
                 st.session_state.chat_stage = 1
                 st.rerun()
 
-    back()
+    elif st.session_state.chat_stage == 1:
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Tell me more about investments"):
+                add_message("user", "tell me more about investments")
+                add_message("assistant", "Investments can include stocks, bonds, mutual funds, and more.")
+                st.session_state.chat_stage = 2
+                st.rerun()
+        with col2:
+            if st.button("How to manage fees?"):
+                add_message("user", "how to manage fees?")
+                add_message("assistant", "You can reduce fees by choosing fee-free accounts or investing in low-cost funds.")
+                st.session_state.chat_stage = 2
+                st.rerun()
+
+    elif st.session_state.chat_stage == 2:
+        if st.button("Back to start"):
+            st.session_state.chat_stage = 0
+            st.session_state.chat_history = []
+            st.session_state.welcome_shown = False
+            st.rerun()
+
+    if st.session_state.chat_stage > 0:
+        if st.button("⬅️ Back"):
+            back()
 
 # --- Customer chat ---
 def customer():
+    if not st.session_state.welcome_shown:
+        add_message("assistant", f"Welcome back, {st.session_state.username}! How can I help you today?")
+        st.session_state.welcome_shown = True
+
     render_chat()
 
     if st.session_state.chat_stage == 0:
-        add_message("assistant", f"Welcome back, {st.session_state.username}! How can I help you today?")
         col1, col2, col3 = st.columns(3)
         with col1:
             if st.button("What is my portfolio?"):
@@ -171,7 +223,7 @@ def customer():
         col1, col2, col3 = st.columns(3)
         with col1:
             if st.button("Compare ESG ETF vs Green Bonds"):
-                add_message("user", "Compare ESG ETF vs Green Bonds")
+                add_message("user", "compare ESG ETF vs Green Bonds")
                 latest_prices = product_prices.iloc[-1][["ESG ETF", "Green Bonds"]]
                 msg = f"Current Prices:\n- ESG ETF: {latest_prices['ESG ETF']}\n- Green Bonds: {latest_prices['Green Bonds']}"
                 add_message("assistant", msg)
@@ -183,7 +235,7 @@ def customer():
                 st.rerun()
         with col2:
             if st.button("See historical trends"):
-                add_message("user", "See historical trends")
+                add_message("user", "see historical trends")
                 fig = px.line(product_prices, x="date", y=["ESG ETF", "Green Bonds"], title="Historical Product Prices")
                 add_message("assistant", fig)
                 st.session_state.chat_stage = 2
@@ -192,25 +244,80 @@ def customer():
             if st.button("Recommendations by Persona"):
                 persona = users[st.session_state.username].get("persona", "Cautious")
                 recommendations = persona_products.get(persona, [])
-                add_message("user", "Show me recommendations")
+                add_message("user", "recommendations by persona")
                 add_message("assistant", f"Based on your profile (**{persona}**), we recommend: {', '.join(recommendations)}")
                 st.session_state.chat_stage = 2
                 st.rerun()
 
-    back()
-    logout()
+    elif st.session_state.chat_stage == 2:
+        if st.button("Back to main menu"):
+            st.session_state.chat_stage = 0
+            st.session_state.chat_history = []
+            st.session_state.welcome_shown = False
+            st.rerun()
+
+    if st.session_state.chat_stage > 0:
+        if st.button("⬅️ Back"):
+            back()
 
 # --- Relationship Manager chat ---
 def rm():
-    st.chat_message("assistant").markdown(f"Welcome, RM {st.session_state.username} 👩‍💼")
-    for q in rm_answers:
-        if st.button(q.capitalize()):
-            st.chat_message("user").markdown(q)
-            st.chat_message("assistant").markdown(rm_answers[q])
-    logout()
+    if not st.session_state.welcome_shown:
+        add_message("assistant", f"Welcome, RM {st.session_state.username} 👩‍💼 How can I help you today?")
+        st.session_state.welcome_shown = True
 
-# --- Main App Logic ---
+    render_chat()
+
+    if st.session_state.chat_stage == 0:
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("Show client list"):
+                add_message("user", "show client list")
+                add_message("assistant", rm_answers["show client list"])
+                st.session_state.chat_stage = 1
+                st.rerun()
+        with col2:
+            if st.button("Recommend portfolio"):
+                add_message("user", "recommend portfolio")
+                add_message("assistant", rm_answers["recommend portfolio"])
+                st.session_state.chat_stage = 1
+                st.rerun()
+        with col3:
+            if st.button("How to contact clients?"):
+                add_message("user", "how to contact clients?")
+                add_message("assistant", rm_answers["how to contact clients?"])
+                st.session_state.chat_stage = 1
+                st.rerun()
+
+    elif st.session_state.chat_stage == 1:
+        if st.button("Back to main menu"):
+            st.session_state.chat_stage = 0
+            st.session_state.chat_history = []
+            st.session_state.welcome_shown = False
+            st.rerun()
+
+    if st.session_state.chat_stage > 0:
+        if st.button("⬅️ Back"):
+            back()
+
+# --- Main App ---
+
+# Accessibility toggle in sidebar
+with st.sidebar:
+    st.header("Settings")
+    acc_mode = st.checkbox("Accessibility Mode (Larger text/buttons)", value=st.session_state.accessibility_mode)
+    if acc_mode != st.session_state.accessibility_mode:
+        st.session_state.accessibility_mode = acc_mode
+        st.rerun()
+
+    st.markdown("---")
+
+    if st.session_state.logged_in:
+        if st.button("Logout"):
+            logout()
+
 role_option = st.sidebar.selectbox("🔐 Select your role", ["Visitor", "Customer", "Relationship Manager"])
+
 if role_option == "Visitor":
     st.session_state.logged_in = False
     visitor()
