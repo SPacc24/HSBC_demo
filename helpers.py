@@ -11,7 +11,6 @@ def render_chat():
             try:
                 st.chat_message(role).markdown(msg)
             except UnicodeEncodeError:
-                # fallback: strip non-ASCII characters
                 safe_msg = msg.encode("ascii", "ignore").decode()
                 st.chat_message(role).markdown(safe_msg)
         else:
@@ -22,7 +21,7 @@ def clear_chat():
     st.session_state.chat_stage = 0
 
 def back():
-    if st.button("⬅️ Back", key="back_button") and st.session_state.chat_stage > 0:
+    if st.button("Back", key="back_button") and st.session_state.chat_stage > 0:
         st.session_state.chat_stage -= 1
         if len(st.session_state.chat_history) >= 2:
             st.session_state.chat_history = st.session_state.chat_history[:-2]
