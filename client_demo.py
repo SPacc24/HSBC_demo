@@ -37,6 +37,7 @@ def match_product(risk, objective, amount):
     matched = []
     for p_key, p in products.items():
         low, high = p["amount_range"]
+        # Moderate risk matches Low or High for now
         if (risk.lower() == p["risk"].lower() or (risk.lower() == "moderate" and p["risk"].lower() in ["low", "high"])) and \
            (objective.lower() == p["objective"]) and (low <= amount <= high):
             matched.append(p)
@@ -74,6 +75,8 @@ def customer():
         st.session_state.step = 0
         st.session_state.answers = {}
         st.session_state.chat_history = []
+        st.session_state.show_forecast = None
+        st.session_state.show_compare = False
         add_message("assistant", "Welcome! Let's build your investment profile.")
     
     render_chat()
@@ -94,7 +97,7 @@ def customer():
                 add_message("user", "High")
                 add_message("assistant", "Noted: High risk appetite.")
                 st.session_state.step += 1
-                st.rerun()
+                st.experimental_rerun()
 
     elif st.session_state.step == 1:
         st.markdown("**Overall, which best describes your investment objectives?**")
@@ -105,14 +108,14 @@ def customer():
                 add_message("user", "(a) Capital preservation")
                 add_message("assistant", "Noted: Capital preservation.")
                 st.session_state.step += 1
-                st.rerun()
+                st.experimental_rerun()
         with col2:
             if st.button("(b) High capital appreciation", key="obj_b"):
                 st.session_state.answers["objective"] = "b"
                 add_message("user", "(b) High capital appreciation")
                 add_message("assistant", "Noted: High capital appreciation.")
                 st.session_state.step += 1
-                st.rerun()
+                st.experimental_rerun()
 
     elif st.session_state.step == 2:
         st.markdown("**What is your wanted invested amount?**")
@@ -123,14 +126,14 @@ def customer():
                 add_message("user", "1,000 – 5,000")
                 add_message("assistant", "Noted investment amount: SGD 1,000 – 5,000.")
                 st.session_state.step += 1
-                st.rerun()
+                st.experimental_rerun()
         with col2:
             if st.button("5,100 – 10,000", key="amt_2"):
                 st.session_state.answers["amount"] = 7500
                 add_message("user", "5,100 – 10,000")
                 add_message("assistant", "Noted investment amount: SGD 5,100 – 10,000.")
                 st.session_state.step += 1
-                st.rerun()
+                st.experimental_rerun()
 
     elif st.session_state.step == 3:
         # Product matching based on answers
@@ -150,11 +153,11 @@ def customer():
                     f"[More info]({product['info_link']})"
                 )
             st.session_state.step += 1
-            st.rerun()
+            st.experimental_rerun()
         else:
             add_message("assistant", "Sorry, no products match your profile exactly. Please contact your RM for advice.")
             st.session_state.step = 0
-            st.rerun()
+            st.experimental_rerun()
 
     elif st.session_state.step == 4:
         st.markdown("**Would you like to see a 3-month price forecast for your recommended product(s)?**")
@@ -164,13 +167,25 @@ def customer():
                 if st.button(f"Forecast: {product['name']}", key=f"forecast_{i}"):
                     add_message("user", f"Forecast: {product['name']}")
                     add_message("assistant", f"Here is the 3-month forecast for {product['name']}.")
-                    plot_forecast(product)
-                    st.rerun()
+                    st.session_state.show_forecast = product["name"]
+                    st.session_state.show_compare = False
+                    st.experimental_rerun()
         with col3:
             if st.button("Compare Portfolio Returns", key="compare_returns"):
                 add_message("user", "Compare Portfolio Returns")
                 add_message("assistant", "Here is the comparison of your portfolio returns with and without the new products.")
-                plot_portfolio_comparison()
-                st.rerun()
+                st.session_state.show_compare = True
+                st.session_state.show_forecast = None
+                st.experimental_rerun()
+
+        # Show chart(s) based on session state
+        if st.session_state.show_forecast:
+            product_name = st.session_state.show_forecast
+            product = next((p for p in products.values() if p["name"] == product_name), None)
+            if product:
+                plot_forecast(product)
+
+        if st.session_state.show_compare:
+            plot_portfolio_comparison()
 
     back()
