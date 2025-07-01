@@ -8,7 +8,12 @@ def add_message(role, content):
 def render_chat():
     for role, msg in st.session_state.chat_history:
         if isinstance(msg, str):
-            st.chat_message(role).markdown(msg)
+            try:
+                st.chat_message(role).markdown(msg)
+            except UnicodeEncodeError:
+                # fallback: strip non-ASCII characters
+                safe_msg = msg.encode("ascii", "ignore").decode()
+                st.chat_message(role).markdown(safe_msg)
         else:
             st.chat_message(role).plotly_chart(msg)
 
