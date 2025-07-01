@@ -31,8 +31,8 @@ def visitor():
                     st.rerun()
 
         st.markdown("### 🔗 Open an Account")
-        st.markdown("[Open HSBC Bank Account](https://www.hsbc.com.sg/accounts/products/everyday-global-account/)")
-        st.markdown("[Open Investment Account](https://www.hsbc.com.sg/log-on/)")
+        st.markdown("[Open HSBC Bank Account](https://www.hsbc.com.sg/accounts/products/everyday-global/)")
+        st.markdown("[Open Investment Account](https://www.hsbc.com.sg/security/?targetAuthLevel=40&destinationURL=%27&__EntryPageParams=returnUrl:/originations/etb/iao)")
 
     elif st.session_state.chat_stage == 1:
         cols = st.columns(3)
