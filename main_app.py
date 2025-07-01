@@ -48,36 +48,28 @@ def render_footer():
         background-color: rgba(250,250,250,0.95);
         color: #222;
         display: flex;
-        flex-wrap: wrap;
         justify-content: space-between;
         align-items: center;
         padding: 10px 20px;
         font-size: 0.9rem;
         box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
         z-index: 9999;
-        gap: 10px;
     """
 
-    col1, col2, col3 = st.columns([1, 6, 3], gap="small")
-
+    col1, col2 = st.columns([6, 1])
     with col1:
-        if st.button("Accessibility: OFF", key="accessibility_toggle"):
-            # Removed accessibility toggle for now
-            pass
-
-    with col2:
         st.markdown(
             """
             <div style="text-align:center;">
-            HSBC WealthMate Demo &mdash; For support, email <a href="mailto:support@hsbc.com">support@hsbc.com</a>
+            HSBC WealthMate Demo
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-    with col3:
+    with col2:
         if st.session_state.logged_in:
-            if st.button("Logout", key="logout_button"):
+            if st.button("🚪 Logout", key="logout_button"):
                 logout()
 
     st.markdown(f"<style>.footer {{{footer_style}}}</style>", unsafe_allow_html=True)
