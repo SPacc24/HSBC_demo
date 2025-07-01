@@ -160,23 +160,43 @@ def customer():
             st.rerun()
 
     elif st.session_state.step == 4:
-        st.markdown("**Would you like to see a 3-month price forecast for your recommended product(s)?**")
-        col1, col2, col3 = st.columns(3)
-        for i, product in enumerate(products.values()):
-            with col1 if i == 0 else col2:
-                if st.button(f"Forecast: {product['name']}", key=f"forecast_{i}"):
-                    add_message("user", f"Forecast: {product['name']}")
-                    add_message("assistant", f"Here is the 3-month forecast for {product['name']}.")
-                    st.session_state.show_forecast = product["name"]
-                    st.session_state.show_compare = False
-                    st.rerun()
-        with col3:
-            if st.button("Compare Portfolio Returns", key="compare_returns"):
-                add_message("user", "Compare Portfolio Returns")
-                add_message("assistant", "Here is the comparison of your portfolio returns with and without the new products.")
-                st.session_state.show_compare = True
-                st.session_state.show_forecast = None
+        st.markdown("**Would you like to view more insights about your recommendation?**")
+
+    # Find recommended product
+    matched_products = match_product(
+        st.session_state.answers["risk"],
+        st.session_state.answers["objective"],
+        st.session_state.answers["amount"]
+    )
+    matched_product = matched_products[0] if matched_products else None
+
+    col1, col2 = st.columns(2)
+    if matched_product:
+        with col1:
+            if st.button(f"View Forecast: {matched_product['name']}", key="view_forecast"):
+                add_message("user", f"View Forecast: {matched_product['name']}")
+                add_message("assistant", f"Here is the 3-month forecast for {matched_product['name']}.")
+                st.session_state.show_forecast = matched_product["name"]
+                st.session_state.show_compare = False
                 st.rerun()
+
+    with col2:
+        if st.button("Compare Portfolio Returns", key="compare_returns"):
+            add_message("user", "Compare Portfolio Returns")
+            add_message("assistant", "Here is the comparison of your portfolio returns with and without the new products.")
+            st.session_state.show_compare = True
+            st.session_state.show_forecast = None
+            st.rerun()
+
+    # Show chart(s)
+    if st.session_state.show_forecast:
+        forecast_product = next((p for p in products.values() if p["name"] == st.session_state.show_forecast), None)
+        if forecast_product:
+            plot_forecast(forecast_product)
+
+    if st.session_state.show_compare:
+        plot_portfolio_comparison()
+
 
         # Show chart(s) based on session state
         if st.session_state.show_forecast:
