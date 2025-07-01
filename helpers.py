@@ -23,7 +23,7 @@ def back():
         st.session_state.chat_stage -= 1
         if len(st.session_state.chat_history) >= 2:
             st.session_state.chat_history = st.session_state.chat_history[:-2]
-        st.experimental_rerun()
+        st.rerun()
 
 def logout():
     st.session_state.logged_in = False
@@ -31,7 +31,7 @@ def logout():
     st.session_state.username = None
     st.session_state.persona = None
     clear_chat()
-    st.experimental_rerun()
+    st.rerun()
 
 def load_css():
     with open("styles.css", encoding="utf-8") as f:

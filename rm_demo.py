@@ -30,7 +30,7 @@ def rm():
                     add_message("user", q)
                     add_message("assistant", rm_answers_stage_0[q])
                     st.session_state.chat_stage = 1
-                    st.experimental_rerun()
+                    st.rerun()
 
     elif st.session_state.chat_stage == 1:
         cols = st.columns(3)
@@ -39,6 +39,6 @@ def rm():
                 if st.button(q.capitalize(), key=f"rm_q1_{i}"):
                     add_message("user", q)
                     add_message("assistant", rm_answers_stage_1[q])
-                    st.experimental_rerun()
+                    st.rerun()
 
     back()

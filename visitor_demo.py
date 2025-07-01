@@ -35,7 +35,7 @@ def visitor():
                     add_message("user", key)
                     add_message("assistant", generic_answers[key])
                     st.session_state.chat_stage = 1
-                    st.experimental_rerun()
+                    st.rerun()
 
     elif st.session_state.chat_stage == 1:
         cols = st.columns(3)
@@ -44,6 +44,6 @@ def visitor():
                 if st.button(label, key=f"visitor_q1_{i}"):
                     add_message("user", key)
                     add_message("assistant", generic_answers[key])
-                    st.experimental_rerun()
+                    st.rerun()
 
     back()

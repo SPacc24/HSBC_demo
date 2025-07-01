@@ -35,7 +35,7 @@ def login(role):
             st.session_state.persona = users[username].get("persona", None)
             clear_chat()
             st.success(f"Logged in as {username} ({role})")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Invalid credentials.")
 

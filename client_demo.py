@@ -125,7 +125,7 @@ def customer():
                     msg += f"[More info]({p['link']})\n"
                 add_message("assistant", msg)
             st.session_state.chat_stage = 1
-            st.experimental_rerun()
+            st.rerun()
 
     elif st.session_state.chat_stage == 1:
         st.markdown("### Price Forecast Chart")
