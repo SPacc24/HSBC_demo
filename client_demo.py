@@ -9,7 +9,7 @@ products = {
         "risk": "High",
         "amount_range": (1000, 4999),
         "objective": "b",  # High capital appreciation
-        "info_link": "https://www.hsbc.com.sg/investments/unit-trusts",
+        "info_link": "https://investments4.personal-banking.hsbc.com.sg/srbp/public/utb/en-gb/fundDetail/BWGS",
         "prices_forecast": [115, 116.5, 118.0],  # example 3-month forecast prices
     },
     "bond": {
@@ -17,7 +17,7 @@ products = {
         "risk": "Low",
         "amount_range": (5100, 10000),
         "objective": "a",  # Capital preservation
-        "info_link": "https://www.hsbc.com.sg/investments/unit-trusts",
+        "info_link": "https://investments4.personal-banking.hsbc.com.sg/srbp/public/utb/en-gb/fundDetail/HGDSH",
         "prices_forecast": [103, 103.5, 104.0],  # example 3-month forecast prices
     }
 }
