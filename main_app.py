@@ -1,5 +1,5 @@
 import streamlit as st
-from helpers import load_css, add_message, clear_chat, render_chat, back, logout
+from helpers import load_css, add_message, clear_chat
 from visitor_demo import visitor
 from client_demo import customer
 from rm_demo import rm
@@ -39,47 +39,11 @@ def login(role):
         else:
             st.error("Invalid credentials.")
 
-def render_footer():
-    footer_style = """
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background-color: rgba(250,250,250,0.95);
-        color: #222;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 20px;
-        font-size: 0.9rem;
-        box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
-        z-index: 9999;
-    """
-
-    col1, col2 = st.columns([6, 1])
-    with col1:
-        st.markdown(
-            """
-            <div style="text-align:center;">
-            HSBC WealthMate Demo
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with col2:
-        if st.session_state.logged_in:
-            if st.button("🚪 Logout", key="logout_button"):
-                logout()
-
-    st.markdown(f"<style>.footer {{{footer_style}}}</style>", unsafe_allow_html=True)
-    st.markdown('<div class="footer"></div>', unsafe_allow_html=True)
-
 def main():
     load_css()
 
     if not st.session_state.logged_in:
-        role_option = st.sidebar.selectbox("Select your role", ["Visitor", "Customer", "Relationship Manager"])
+        role_option = st.sidebar.selectbox("🔐 Select your role", ["Visitor", "Customer", "Relationship Manager"])
         if role_option == "Visitor":
             visitor()
         elif role_option == "Customer":
@@ -93,6 +57,40 @@ def main():
             rm()
 
     render_footer()
+
+def render_footer():
+    footer_style = """
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: rgba(250,250,250,0.95);
+        color: #222;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 10px 20px;
+        font-size: 0.9rem;
+        box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+        z-index: 9999;
+        gap: 10px;
+    """
+
+    col1, col2 = st.columns([9, 1], gap="small")
+
+    with col2:
+        if st.session_state.logged_in:
+            if st.button("Logout", key="logout_button"):
+                st.session_state.logged_in = False
+                st.session_state.role = None
+                st.session_state.username = None
+                st.session_state.persona = None
+                clear_chat()
+                st.rerun()
+
+    st.markdown(f"<style>.footer {{{footer_style}}}</style>", unsafe_allow_html=True)
+    st.markdown('<div class="footer"></div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
