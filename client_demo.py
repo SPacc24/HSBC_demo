@@ -165,7 +165,7 @@ def customer():
                     add_message("user", f"Forecast: {product['name']}")
                     add_message("assistant", f"Here is the 3-month forecast for {product['name']}.")
                     plot_forecast(product)
-                    st.experimental_rerun()
+                    st.rerun()
         with col3:
             if st.button("Compare Portfolio Returns", key="compare_returns"):
                 add_message("user", "Compare Portfolio Returns")
