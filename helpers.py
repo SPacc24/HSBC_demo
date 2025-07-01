@@ -1,5 +1,3 @@
-### helper.py
-
 import streamlit as st
 
 def add_message(role, content):
@@ -25,7 +23,7 @@ def back():
         st.session_state.chat_stage -= 1
         if len(st.session_state.chat_history) >= 2:
             st.session_state.chat_history = st.session_state.chat_history[:-2]
-        st.rerun()
+        st.experimental_rerun()
 
 def logout():
     st.session_state.logged_in = False
@@ -33,8 +31,8 @@ def logout():
     st.session_state.username = None
     st.session_state.persona = None
     clear_chat()
-    st.rerun()
+    st.experimental_rerun()
 
 def load_css():
-    with open("styles.css") as f:
+    with open("styles.css", encoding="utf-8") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
