@@ -1,19 +1,55 @@
 import streamlit as st
+import plotly.graph_objects as go
 from helpers import add_message, render_chat, back
 
-stage_0_questions = {
-    "What is my portfolio return?": "Your current return on portfolio is **7.72%** based on your asset mix:\n\n- SGGSA: 25% (Return: 20.32%)\n- FEGS: 75% (Return: 3.52%)",
-    "Show product recommendation": "Based on your profile:\n\n**BGF World Gold A2 SGD-H BWGS**\n- 🧭 Risk: High\n- 💰 Amount: $1k–4.9k\n- 🎯 Objective: High capital appreciation\n\n👉 [View Product Info](https://www.hsbc.com.sg/investments/products/unit-trusts/)",
-    "Simulate new portfolio (add unit trust)": "📊 If you add **1k in BWGS**, your new return on portfolio is **8.52%**.\n\nBreakdown:\n- SGGSA: 2/9\n- FEGS: 2/3\n- BWGS: 1/9"
+# Customer canned responses (simplified for demo)
+customer_answers_stage_0 = {
+    "what is my portfolio?": (
+        "Your portfolio contains:\n"
+        "- Schroder International Selection Fund Global Gold SGD Hedged Class A Acc (SGGSA) - SGD 2000 (25%)\n"
+        "- FIDELITY EUROPEAN GROWTH FUND S$ - REINVEST DIVD (FEGS) - SGD 6000 (75%)\n"
+        "Current Return on Portfolio: 7.72%"
+    ),
+    "how risky is my portfolio?": "Your portfolio risk level is Medium, balancing growth and safety.",
+    "can i change my risk level?": "Yes, you can adjust your risk tolerance anytime via the app or your RM.",
 }
 
-stage_1_questions = {
-    "Simulate new portfolio (add bond)": "📉 If you add **8k in HGDSH**, your new return is **5.12%**.\n\nBreakdown:\n- SGGSA: 1/8\n- FEGS: 3/8\n- HGDSH: 1/2",
-    "Compare BWGS vs HGDSH": (
-        "**BGF World Gold A2 (BWGS)**\n- Risk: High | Return Potential: High\n- Objective: Capital appreciation\n\n"
-        "**HSBC Global Short Duration Bond (HGDSH)**\n- Risk: Low | Return: Stable\n- Objective: Capital preservation"
-    ),
+customer_answers_stage_1 = {
+    "forecast bwgs": "Showing 3-month forecast for BGF World Gold A2 SGD-H (BWGS).",
+    "forecast hgds": "Showing 3-month forecast for HSBC GIF Global Short Duration Bond ACH SGD (HGDSH).",
+    "compare portfolio": "Comparing current portfolio returns with addition of BWGS and HGDSH products.",
 }
+
+def plot_forecast(product_name, prices):
+    months = ["Month 1", "Month 2", "Month 3"]
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=months, y=prices, mode="lines+markers", name=product_name))
+    fig.update_layout(
+        title=f"3-Month Price Forecast for {product_name}",
+        yaxis_title="Price (SGD)",
+        xaxis_title="Time",
+        template="plotly_white"
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+def plot_portfolio_comparison():
+    # Current portfolio return
+    current_return = 7.72
+    # After adding BWGS (unit trust)
+    bwgs_return = 8.52
+    # After adding HGDSH (bond)
+    hgds_return = 5.12
+
+    products = ["Current Portfolio", "Add BWGS (Unit Trust)", "Add HGDSH (Bond)"]
+    returns = [current_return, bwgs_return, hgds_return]
+
+    fig = go.Figure(data=[go.Bar(x=products, y=returns, text=[f"{r}%" for r in returns], textposition='auto')])
+    fig.update_layout(
+        title="Portfolio Return Comparison",
+        yaxis_title="Return (%)",
+        template="plotly_white"
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
 def customer():
     if not st.session_state.chat_history:
@@ -24,21 +60,41 @@ def customer():
 
     if st.session_state.chat_stage == 0:
         cols = st.columns(3)
-        for i, (q, _) in enumerate(stage_0_questions.items()):
+        for i, (q, _) in enumerate(customer_answers_stage_0.items()):
             with cols[i]:
                 if st.button(q.capitalize(), key=f"customer_q0_{i}"):
                     add_message("user", q)
-                    add_message("assistant", stage_0_questions[q])
+                    add_message("assistant", customer_answers_stage_0[q])
                     st.session_state.chat_stage = 1
                     st.rerun()
 
     elif st.session_state.chat_stage == 1:
         cols = st.columns(3)
-        for i, (q, _) in enumerate(stage_1_questions.items()):
+        # Add buttons for forecast and portfolio comparison
+        buttons = [
+            ("Forecast: BWGS", "forecast bwgs"),
+            ("Forecast: HGDSH", "forecast hgds"),
+            ("Compare Portfolio Returns", "compare portfolio"),
+        ]
+        for i, (label, key) in enumerate(buttons):
             with cols[i]:
-                if st.button(q.capitalize(), key=f"customer_q1_{i}"):
-                    add_message("user", q)
-                    add_message("assistant", stage_1_questions[q])
+                if st.button(label, key=f"customer_q1_{i}"):
+                    add_message("user", key)
+                    add_message("assistant", customer_answers_stage_1[key])
                     st.rerun()
+
+        # Show charts depending on last user message
+        if st.session_state.chat_history:
+            last_msg = st.session_state.chat_history[-1]
+            if last_msg[0] == "user":
+                if last_msg[1] == "forecast bwgs":
+                    # Example mock forecast prices
+                    prices = [115, 116.5, 118.0]
+                    plot_forecast("BGF World Gold A2 SGD-H (BWGS)", prices)
+                elif last_msg[1] == "forecast hgds":
+                    prices = [103, 103.5, 104.0]
+                    plot_forecast("HSBC GIF Global Short Duration Bond ACH SGD (HGDSH)", prices)
+                elif last_msg[1] == "compare portfolio":
+                    plot_portfolio_comparison()
 
     back()
