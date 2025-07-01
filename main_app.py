@@ -65,6 +65,8 @@ def toggle_accessibility():
     st.session_state.accessibility_mode = not st.session_state.accessibility_mode
     st.rerun()
 
+### main_app.py – Replace render_footer()
+
 def render_footer():
     footer_style = """
         position: fixed;
@@ -74,50 +76,34 @@ def render_footer():
         background-color: rgba(250,250,250,0.95);
         color: #222;
         display: flex;
-        flex-wrap: wrap;
         justify-content: space-between;
         align-items: center;
         padding: 10px 20px;
         font-size: 0.9rem;
         box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
         z-index: 9999;
-        gap: 10px;
     """
 
-    if st.session_state.accessibility_mode:
-        footer_style += " font-size: 18px; padding: 14px 20px;"
-
-    accessibility_text = "🧑‍🦳 Accessibility: ON" if st.session_state.accessibility_mode else "👵 Accessibility: OFF"
-
-    col1, col2, col3 = st.columns([1, 6, 3], gap="small")
+    col1, col2 = st.columns([8, 2], gap="small")
 
     with col1:
-        if st.button(accessibility_text, key="accessibility_toggle"):
-            toggle_accessibility()
-
-    with col2:
         st.markdown(
             """
-            <div style="text-align:center;">
-            HSBC WealthMate Demo &mdash; For support, email <a href="mailto:support@hsbc.com">support@hsbc.com</a>
+            <div style="text-align:left;">
+            HSBC WealthMate Demo
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-    with col3:
+    with col2:
         if st.session_state.logged_in:
-            if st.button("🚪 Logout", key="logout_button"):
-                st.session_state.logged_in = False
-                st.session_state.role = None
-                st.session_state.username = None
-                st.session_state.persona = None
-                clear_chat()
-                st.rerun()
+            if st.button("\ud83d\udeaa Logout", key="logout_button"):
+                from helpers import logout
+                logout()
 
     st.markdown(f"<style>.footer {{{footer_style}}}</style>", unsafe_allow_html=True)
     st.markdown('<div class="footer"></div>', unsafe_allow_html=True)
-
 
 if __name__ == "__main__":
     main()

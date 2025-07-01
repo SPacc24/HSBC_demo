@@ -1,3 +1,5 @@
+### helper.py
+
 import streamlit as st
 
 def add_message(role, content):
@@ -17,7 +19,6 @@ def clear_chat():
 def back():
     if st.button("⬅️ Back", key="back_button") and st.session_state.chat_stage > 0:
         st.session_state.chat_stage -= 1
-        # Remove last two messages (user+assistant)
         if len(st.session_state.chat_history) >= 2:
             st.session_state.chat_history = st.session_state.chat_history[:-2]
         st.rerun()

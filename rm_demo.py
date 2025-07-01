@@ -1,21 +1,24 @@
+
+### rm_demo.py
+
 import streamlit as st
 from helpers import add_message, render_chat, back
 
 rm_answers_stage_0 = {
     "show client list": "Clients: Alex Tan, Brian Lim, Clara Wong.",
     "recommend portfolio": "A balanced portfolio with ETFs and bonds fits most clients seeking moderate growth.",
-    "how to contact clients?": "Use the CRM dashboard or email for client communication.",
+    "how to contact clients?": "Use the CRM dashboard or email for client communication."
 }
 
 rm_answers_stage_1 = {
     "client meeting tips": "Always understand client goals and tailor your portfolio recommendations accordingly.",
     "update client info": "You can update client info using the CRM portal under 'Client Profiles'.",
-    "schedule follow-ups": "Use the CRM calendar or your email to schedule follow-up meetings.",
+    "schedule follow-ups": "Use the CRM calendar or your email to schedule follow-up meetings."
 }
 
 def rm():
     if not st.session_state.chat_history:
-        add_message("assistant", f"Welcome, RM {st.session_state.username} 👩‍💼 How can I help you today?")
+        add_message("assistant", f"Welcome, RM {st.session_state.username} \ud83d\udc69\u200d\ud83d\udcbc How can I help you today?")
         st.session_state.chat_stage = 0
 
     render_chat()
@@ -37,7 +40,6 @@ def rm():
                 if st.button(q.capitalize(), key=f"rm_q1_{i}"):
                     add_message("user", q)
                     add_message("assistant", rm_answers_stage_1[q])
-                    # stay at stage 1
                     st.rerun()
 
     back()
