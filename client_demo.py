@@ -8,17 +8,17 @@ products = {
         "name": "BGF World Gold A2 SGD-H (BWGS)",
         "risk": "High",
         "amount_range": (1000, 4999),
-        "objective": "b",  # High capital appreciation
+        "objective": "b",
         "info_link": "https://investments4.personal-banking.hsbc.com.sg/srbp/public/utb/en-gb/fundDetail/BWGS",
-        "prices_forecast": [115, 116.5, 118.0],  # example 3-month forecast prices
+        "prices_forecast": [115, 116.5, 118.0],
     },
     "bond": {
         "name": "HSBC GIF Global Short Duration Bond ACH SGD (HGDSH)",
         "risk": "Low",
         "amount_range": (5100, 10000),
-        "objective": "a",  # Capital preservation
+        "objective": "a",
         "info_link": "https://investments4.personal-banking.hsbc.com.sg/srbp/public/utb/en-gb/fundDetail/HGDSH",
-        "prices_forecast": [103, 103.5, 104.0],  # example 3-month forecast prices
+        "prices_forecast": [103, 103.5, 104.0],
     }
 }
 
@@ -29,7 +29,6 @@ portfolio = {
     "current_return": 7.72
 }
 
-# Utility function: compute weighted portfolio return
 def weighted_return(weights, returns):
     return sum(w * r for w, r in zip(weights, returns))
 
@@ -37,7 +36,6 @@ def match_product(risk, objective, amount):
     matched = []
     for p_key, p in products.items():
         low, high = p["amount_range"]
-        # Moderate risk matches Low or High for now
         if (risk.lower() == p["risk"].lower() or (risk.lower() == "moderate" and p["risk"].lower() in ["low", "high"])) and \
            (objective.lower() == p["objective"]) and (low <= amount <= high):
             matched.append(p)
@@ -56,11 +54,8 @@ def plot_forecast(product):
     st.plotly_chart(fig, use_container_width=True)
 
 def plot_portfolio_comparison():
-    # Current return
     current = portfolio["current_return"]
-    # New return with BWGS (unit trust) added at 1k SGD (approx 1/9 weight)
     new_return_bwgs = 8.52
-    # New return with HGDSH (bond) added at 8k SGD (approx 1/2 weight)
     new_return_hgds = 5.12
 
     products_list = ["Current Portfolio", "Add BWGS (Unit Trust)", "Add HGDSH (Bond)"]
@@ -122,7 +117,7 @@ def customer():
         col1, col2 = st.columns(2)
         with col1:
             if st.button("1,000 – 5,000", key="amt_1"):
-                st.session_state.answers["amount"] = 3000  # midpoint for logic
+                st.session_state.answers["amount"] = 3000
                 add_message("user", "1,000 – 5,000")
                 add_message("assistant", "Noted investment amount: SGD 1,000 – 5,000.")
                 st.session_state.step += 1
@@ -136,7 +131,6 @@ def customer():
                 st.rerun()
 
     elif st.session_state.step == 3:
-        # Product matching based on answers
         matched_products = match_product(
             st.session_state.answers["risk"],
             st.session_state.answers["objective"],
@@ -162,13 +156,15 @@ def customer():
     elif st.session_state.step == 4:
         st.markdown("**Would you like to view more insights about your recommendation?**")
 
-    # Find recommended product
-    matched_products = match_product(
-        st.session_state.answers["risk"],
-        st.session_state.answers["objective"],
-        st.session_state.answers["amount"]
-    )
-    matched_product = matched_products[0] if matched_products else None
+    # Safe matching only after step >= 3
+    matched_product = None
+    if st.session_state.step >= 3:
+        matched_products = match_product(
+            st.session_state.answers.get("risk", ""),
+            st.session_state.answers.get("objective", ""),
+            st.session_state.answers.get("amount", 0)
+        )
+        matched_product = matched_products[0] if matched_products else None
 
     col1, col2 = st.columns(2)
     if matched_product:
@@ -188,7 +184,6 @@ def customer():
             st.session_state.show_forecast = None
             st.rerun()
 
-    # Show chart(s)
     if st.session_state.show_forecast:
         forecast_product = next((p for p in products.values() if p["name"] == st.session_state.show_forecast), None)
         if forecast_product:
@@ -196,16 +191,5 @@ def customer():
 
     if st.session_state.show_compare:
         plot_portfolio_comparison()
-
-
-        # Show chart(s) based on session state
-        if st.session_state.show_forecast:
-            product_name = st.session_state.show_forecast
-            product = next((p for p in products.values() if p["name"] == product_name), None)
-            if product:
-                plot_forecast(product)
-
-        if st.session_state.show_compare:
-            plot_portfolio_comparison()
 
     back()
