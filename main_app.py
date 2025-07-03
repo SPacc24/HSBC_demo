@@ -4,7 +4,7 @@ from visitor_demo import visitor
 from client_demo import customer
 from rm_demo import rm
 
-st.set_page_config(page_title="WealthMate Demo", layout="wide")
+st.set_page_config(page_title="Orion Demo", layout="wide")
 
 users = {
     "alex": {"password": "client123", "role": "Customer", "persona": "Cautious"},
